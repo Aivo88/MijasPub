@@ -1,0 +1,5 @@
+{
+  "version": "1.00.00",
+  "cache": "mijaspub-v1",
+  "notes": "MijasPub: SE7EN V2:sta haarautettu oma versio. localStorage-avain (mijaspub) ja välimuistin nimi (mijaspub-v1) eriytetty niin ettei data mene sekaisin Se7en V2:n kanssa. Pohja valmis räätälöintiä varten."
+}
