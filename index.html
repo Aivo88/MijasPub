@@ -506,9 +506,14 @@ input:focus,select:focus{border-color:var(--gold);}
 <div class="modal-bg" id="m-prod">
   <div class="modal">
     <div class="modal-title" id="mp-title">Product</div>
-    <div class="field"><div class="label" data-t="name">Name</div><input type="text" id="mp-name" autocomplete="off"></div>
+    <div class="field"><div class="label">Suomi</div><input type="text" id="mp-name-fi" autocomplete="off"></div>
+    <div class="field"><div class="label">English</div><input type="text" id="mp-name-en" autocomplete="off"></div>
+    <div class="field"><div class="label">Espa&ntilde;ol</div><input type="text" id="mp-name-es" autocomplete="off"></div>
+    <div class="field"><div class="label">Deutsch</div><input type="text" id="mp-name-de" autocomplete="off"></div>
+    <div class="field"><div class="label">Svenska</div><input type="text" id="mp-name-sv" autocomplete="off"></div>
     <div class="field"><div class="label" data-t="price">Price</div><input type="text" id="mp-price" inputmode="decimal" autocomplete="off"></div>
     <div class="field"><div class="label" data-t="category">Category</div><select id="mp-cat"></select></div>
+    <div class="field"><button class="btn-full" id="mp-ask" onclick="toggleAskField()" data-t="ask_new_customer">Ask new customer</button></div>
     <div class="field"><button class="btn-full" id="mp-fav" onclick="toggleFavField()" data-t="favorite">Favorite</button></div>
     <div class="btn-row" style="margin-bottom:0.6em;">
       <button class="btn-full" style="background:var(--gbg);border-color:var(--green);color:var(--green);" onclick="saveProduct()" data-t="save">Save</button>
@@ -602,6 +607,29 @@ input:focus,select:focus{border-color:var(--gold);}
   </div>
 </div>
 
+<div class="modal-bg" id="m-onboard">
+  <div class="modal">
+    <div class="modal-title" id="ob-title"></div>
+    <div class="btn-row" style="margin-top:1em;">
+      <button class="btn-full" style="background:var(--gbg);border-color:var(--green);color:var(--green);" onclick="obAnswer(true)" data-t="yes">Yes</button>
+      <button class="btn-full" style="background:var(--rbg);border-color:var(--rborder);color:var(--red);" onclick="obAnswer(false)" data-t="no">No</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-catlbl">
+  <div class="modal">
+    <div class="modal-title" data-t="category">Category</div>
+    <div class="field"><div class="label">Suomi</div><input type="text" id="mcl-fi" autocomplete="off"></div>
+    <div class="field"><div class="label">English</div><input type="text" id="mcl-en" autocomplete="off"></div>
+    <div class="field"><div class="label">Espa&ntilde;ol</div><input type="text" id="mcl-es" autocomplete="off"></div>
+    <div class="field"><div class="label">Deutsch</div><input type="text" id="mcl-de" autocomplete="off"></div>
+    <div class="field"><div class="label">Svenska</div><input type="text" id="mcl-sv" autocomplete="off"></div>
+    <button class="btn-full" style="background:var(--gbg);border-color:var(--green);color:var(--green);margin-bottom:0.6em;" onclick="saveCatLabel()" data-t="save">Save</button>
+    <button class="btn-modal-cancel" onclick="closeModal('m-catlbl')" data-t="cancel">Cancel</button>
+  </div>
+</div>
+
 <div class="modal-bg" id="m-confirm">
   <div class="modal">
     <div class="modal-title" id="cf-title"></div>
@@ -618,7 +646,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.03.00';
+var APP_VERSION = '1.04.00';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -633,6 +661,11 @@ var LANGS=[['en','English'],['fi','Suomi'],['es','Espa\u00F1ol'],['de','Deutsch'
 var LANG={
   // --- kiosk / cashier / pin ---
   currency:{en:'Currency',fi:'Valuutta',es:'Moneda',de:'W\u00E4hrung',sv:'Valuta'},
+  yes:{en:'Yes',fi:'Kyll\u00E4',es:'S\u00ED',de:'Ja',sv:'Ja'},
+  no:{en:'No',fi:'Ei',es:'No',de:'Nein',sv:'Nej'},
+  add_q:{en:'Add: {a}?',fi:'Lis\u00E4t\u00E4\u00E4nk\u00F6: {a}?',es:'\u00BFA\u00F1adir: {a}?',de:'Hinzuf\u00FCgen: {a}?',sv:'L\u00E4gg till: {a}?'},
+  ask_new_customer:{en:'Ask new customer',fi:'Kysy uudelta asiakkaalta',es:'Preguntar al nuevo cliente',de:'Neuen Kunden fragen',sv:'Fr\u00E5ga ny kund'},
+  uncategorized:{en:'Uncategorized',fi:'Luokittelematon',es:'Sin categor\u00EDa',de:'Nicht kategorisiert',sv:'Okategoriserad'},
   cashier:{en:'Cashier',fi:'Kassanhoitaja',es:'Cajero',de:'Kasse',sv:'Kass\u00F6r'},
   start_shopping:{en:'Start shopping',fi:'Aloita shoppailu',es:'Empezar a comprar',de:'Einkauf starten',sv:'B\u00F6rja handla'},
   done:{en:'Done',fi:'Valmis',es:'Listo',de:'Fertig',sv:'Klar'},
@@ -1061,7 +1094,7 @@ var TABLE_DEFS = [
 /* ---------- STATE ---------- */
 function blank(){
   return { customers:[], transactions:[], products:[], categories:[UNCAT],
-    hiddenCustomers:[], groups:[], quickAmounts:[5,2,1,0.5,0.1],
+    hiddenCustomers:[], groups:[], quickAmounts:[5,2,1,0.5,0.1], catNames:{},
     settings:{dayEnd:2,fontScale:1,cols:3,headerText:'Pub',headerImage:null,
       tablesLabel:'Tables',tablesHidden:true,groupsLabel:'Groups',currency:'\u20AC',lang:'fi',defaultLang:'fi',adminName:'Admin',pin:'0000',
       autoBackup:{on:false,cycle:'weekly',day:0,hour:15,last:0}},
@@ -1093,6 +1126,7 @@ function getState(){
       if(typeof s.defaultLang!=='string') s.defaultLang='fi';
       if(typeof s.adminName!=='string' || !s.adminName) s.adminName='Admin';
       if(typeof s.pin!=='string' || !/^[0-9]{4}$/.test(s.pin)) s.pin='0000';
+      if(!st.catNames || typeof st.catNames!=='object') st.catNames={};
       if(!s.autoBackup || typeof s.autoBackup!=='object')
         s.autoBackup={ on:false, cycle:'weekly', day:0, hour:15, last:0 };
       if(typeof s.tablesHidden!=='boolean') s.tablesHidden=true;
@@ -1436,22 +1470,6 @@ function askNewCustomer(prefill){
         return;
       }
     }
-    var match=null, known=knownCustomers(st);
-    for(i=0;i<known.length;i++){
-      if(known[i].name.toLowerCase()===name.toLowerCase()){ match=known[i]; break; }
-    }
-    if(match){
-      document.getElementById('mk-body').textContent=
-        t('known_q').replace('{a}',match.name).replace('{b}',fmtDate(match.last));
-      document.getElementById('mk-same').onclick=function(){
-        closeModal('m-known'); addCustomer(match.id,name,true);
-      };
-      document.getElementById('mk-new').onclick=function(){
-        closeModal('m-known'); addCustomer(uid('c'),name,false);
-      };
-      openModal('m-known');
-      return;
-    }
     addCustomer(uid('c'),name,false);
   });
 }
@@ -1461,7 +1479,7 @@ function addCustomer(id,name,restored){
   st.customers.push({id:id,name:name});
   if(!saveState(st)) return;
   toast(restored ? t('ts_history_restored').replace('{a}',name) : t('ts_added').replace('{a}',name),'ok');
-  goHome();
+  runOnboarding(id);
 }
 
 /* ---------- RENAME / MERGE ---------- */
@@ -1659,6 +1677,99 @@ function resetIdle(){
 }
 ['click','touchstart','keydown'].forEach(function(ev){ document.addEventListener(ev,resetIdle,true); });
 
+/* ---------- MULTILINGUAL PRODUCTS & CATEGORIES ---------- */
+function pName(p){
+  if(!p) return '';
+  var lang=(getState().settings.lang)||'fi';
+  var nm=p.names||{};
+  if(nm[lang]) return nm[lang];
+  if(nm.fi) return nm.fi;
+  for(var k in nm){ if(nm[k]) return nm[k]; }
+  return p.name||'';
+}
+function catLabel(key){
+  if(key===UNCAT) return t('uncategorized');
+  var st=getState(), lang=st.settings.lang||'fi';
+  var m=(st.catNames&&st.catNames[key])||null;
+  if(m){ if(m[lang]) return m[lang]; if(m.fi) return m.fi; for(var k in m){ if(m[k]) return m[k]; } }
+  return key;
+}
+function prodMatches(p,q){
+  if(pName(p).toLowerCase().indexOf(q)!==-1) return true;
+  var nm=p.names||{}; for(var k in nm){ if(nm[k] && nm[k].toLowerCase().indexOf(q)!==-1) return true; }
+  return (p.name||'').toLowerCase().indexOf(q)!==-1;
+}
+var editingAsk=false;
+function setAskField(v){
+  editingAsk=v;
+  var b=document.getElementById('mp-ask');
+  b.textContent=(v?'\u2611':'\u2610')+' '+t('ask_new_customer');
+  b.style.borderColor=v?'var(--green)':'var(--border2)';
+  b.style.color=v?'var(--green)':'var(--text2)';
+}
+function toggleAskField(){ setAskField(!editingAsk); }
+/* ask-on-join onboarding (uses each flagged product's own name) */
+var obQueue=[], obIdx=0, obCustId=null;
+function runOnboarding(custId){
+  var st=getState();
+  obQueue=st.products.filter(function(p){ return p.ask; });
+  obIdx=0; obCustId=custId;
+  obNext();
+}
+function obNext(){
+  if(obIdx>=obQueue.length){ closeModal('m-onboard'); goHome(); return; }
+  var p=obQueue[obIdx];
+  document.getElementById('ob-title').textContent=t('add_q').replace('{a}',pName(p)+' ('+f(p.price)+EUR+')');
+  openModal('m-onboard');
+}
+function obAnswer(yes){
+  var p=obQueue[obIdx];
+  if(yes && p){
+    var st=getState(), c=findCustomer(st,obCustId);
+    if(c){ pushTx(st,{customerId:c.id,customerName:c.name,type:'debt',amount:p.price,items:[{name:pName(p),price:p.price,qty:1}]}); saveState(st); }
+  }
+  obIdx++; obNext();
+}
+/* category label editor - keeps the internal key stable across languages */
+var editingCatKey=null;
+function editCatLabel(enc){
+  var key=decodeURIComponent(enc); editingCatKey=key;
+  var st=getState(), m=(st.catNames&&st.catNames[key])||{};
+  ['fi','en','es','de','sv'].forEach(function(lc){ document.getElementById('mcl-'+lc).value = m[lc]||(lc==='fi'?key:''); });
+  openModal('m-catlbl');
+}
+function saveCatLabel(){
+  if(!editingCatKey) return;
+  var st=getState(), m={};
+  ['fi','en','es','de','sv'].forEach(function(lc){ var v=document.getElementById('mcl-'+lc).value.trim(); if(v) m[lc]=v; });
+  st.catNames=st.catNames||{}; st.catNames[editingCatKey]=m;
+  if(saveState(st)){ closeModal('m-catlbl'); openCategories(); toast(t('ts_saved'),'ok'); }
+}
+/* one-time seed of the sauna menu */
+function seedDefaults(st){
+  st.catNames=st.catNames||{};
+  var cats={
+    'Palvelut':{fi:'Palvelut',en:'Services',es:'Servicios',de:'Leistungen',sv:'Tj\u00E4nster'},
+    'Ruoka':{fi:'Ruoka',en:'Food',es:'Comida',de:'Essen',sv:'Mat'},
+    'Juomat':{fi:'Juomat',en:'Drinks',es:'Bebidas',de:'Getr\u00E4nke',sv:'Drycker'}
+  };
+  Object.keys(cats).forEach(function(k){ if(st.categories.indexOf(k)===-1) st.categories.push(k); st.catNames[k]=cats[k]; });
+  function P(cat,price,fav,ask,names){ st.products.push({id:uid('p'),names:names,name:names.fi,price:price,cat:cat,fav:!!fav,ask:!!ask}); }
+  P('Juomat',2.5,true,false,{fi:'Olut',en:'Beer',es:'Cerveza',de:'Bier',sv:'\u00D6l'});
+  P('Juomat',3.5,false,false,{fi:'Hartwall Aquarius Seltzer',en:'Hartwall Aquarius Seltzer',es:'Hartwall Aquarius Seltzer',de:'Hartwall Aquarius Seltzer',sv:'Hartwall Aquarius Seltzer'});
+  P('Juomat',4,false,false,{fi:'Siideri',en:'Cider',es:'Sidra',de:'Cider',sv:'Cider'});
+  P('Juomat',4,false,false,{fi:'Energiajuoma',en:'Energy drink',es:'Bebida energ\u00E9tica',de:'Energydrink',sv:'Energidryck'});
+  P('Juomat',2.5,false,false,{fi:'Limonadi',en:'Lemonade',es:'Limonada',de:'Limonade',sv:'L\u00E4sk'});
+  P('Juomat',1,false,false,{fi:'Vesi',en:'Water',es:'Agua',de:'Wasser',sv:'Vatten'});
+  P('Ruoka',3,false,false,{fi:'Makkara',en:'Sausage',es:'Salchicha',de:'Wurst',sv:'Korv'});
+  P('Ruoka',3,false,false,{fi:'Tapas',en:'Tapas',es:'Tapas',de:'Tapas',sv:'Tapas'});
+  P('Ruoka',3,false,false,{fi:'J\u00E4\u00E4tel\u00F6',en:'Ice cream',es:'Helado',de:'Eis',sv:'Glass'});
+  P('Palvelut',2.5,false,false,{fi:'Vuokrapyyhe',en:'Towel rental',es:'Alquiler de toalla',de:'Handtuchverleih',sv:'Handdukshyra'});
+  P('Palvelut',2.5,false,false,{fi:'Vuokra-uima-asu',en:'Swimsuit rental',es:'Alquiler de ba\u00F1ador',de:'Badeanzugverleih',sv:'Baddr\u00E4ktshyra'});
+  P('Palvelut',5,false,true,{fi:'Kuljetus saunalle',en:'Transport to sauna',es:'Transporte a la sauna',de:'Transport zur Sauna',sv:'Transport till bastun'});
+  P('Palvelut',12,false,true,{fi:'Saunominen',en:'Sauna session',es:'Sesi\u00F3n de sauna',de:'Saunagang',sv:'Bastubad'});
+  st._seeded=true;
+}
 /* ---------- CATEGORY BAR + PRODUCT GRID ---------- */
 function usedCategories(st){
   return st.categories.filter(function(c){
@@ -1670,7 +1781,7 @@ function renderCats(elId){
   var st=getState();
   var cats=['__fav__'].concat(usedCategories(st));
   document.getElementById(elId).innerHTML=cats.map(function(c){
-    var lbl = c==='__fav__' ? '\u2605 '+t('favorites') : esc(c);
+    var lbl = c==='__fav__' ? '\u2605 '+t('favorites') : esc(catLabel(c));
     return '<button class="chip '+(activeCat===c?'active':'')+'" onclick="pickCat(\''+encodeURIComponent(c)+'\')">'+lbl+'</button>';
   }).join('');
 }
@@ -1699,7 +1810,7 @@ function renderProds(elId){
     return '<div class="prod-card" onclick="addToCart(\''+p.id+'\')">'+
       (q?'<div class="prod-qty">'+q+'</div>':'')+
       (p.fav?'<div class="prod-star">\u2605</div>':'')+
-      '<div class="prod-name">'+esc(p.name)+'</div>'+
+      '<div class="prod-name">'+esc(pName(p))+'</div>'+
       '<div class="prod-price">'+f(p.price)+EUR+'</div></div>';
   }).join('');
 }
@@ -1709,7 +1820,7 @@ function addToCart(pid){
   var st=getState(), p=null;
   for(var i=0;i<st.products.length;i++) if(st.products[i].id===pid) p=st.products[i];
   if(!p) return;
-  if(!cart[pid]) cart[pid]={id:p.id,name:p.name,price:p.price,qty:0};
+  if(!cart[pid]) cart[pid]={id:p.id,name:pName(p),price:p.price,qty:0};
   cart[pid].qty++;
   refreshCartViews();
 }
@@ -2222,9 +2333,9 @@ function openCategories(){
     var locked=(cat===UNCAT);
     return '<div class="row">'+
       '<button class="row-main" onclick="openCatProducts(\''+encodeURIComponent(cat)+'\')">'+
-      '<div style="font-weight:600;">'+esc(cat)+(locked?' <span style="color:var(--text4);font-size:0.8em;">'+t('default_tag')+'</span>':'')+'</div>'+
+      '<div style="font-weight:600;">'+esc(catLabel(cat))+(locked?' <span style="color:var(--text4);font-size:0.8em;">'+t('default_tag')+'</span>':'')+'</div>'+
       '<div class="row-sub">'+n+' '+(n===1?t('m_product'):t('m_products'))+'</div></button>'+
-      (locked?'':'<button class="qbtn" onclick="renameCategory(\''+encodeURIComponent(cat)+'\')" title="Rename">\u270E</button>'+
+      (locked?'':'<button class="qbtn" onclick="editCatLabel(\''+encodeURIComponent(cat)+'\')" title="Rename">\u270E</button>'+
         '<button class="qbtn" style="color:var(--red);" onclick="deleteCategory(\''+encodeURIComponent(cat)+'\')">\u2715</button>')+
       '</div>';
   }).join('')+
@@ -2243,13 +2354,13 @@ function renderCatSearch(){
   if(!q){ box.innerHTML=''; if(listEl) listEl.style.display=''; return; }
   if(listEl) listEl.style.display='none';
   var st=getState();
-  var hits=st.products.filter(function(p){ return p.name.toLowerCase().indexOf(q)!==-1; })
-    .sort(function(a,b){ return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
+  var hits=st.products.filter(function(p){ return prodMatches(p,q); })
+    .sort(function(a,b){ return pName(a).toLowerCase().localeCompare(pName(b).toLowerCase()); });
   box.innerHTML = hits.length ? hits.map(function(p){
     return '<div class="row">'+
       '<button class="row-main" onclick="editProduct(\''+p.id+'\')">'+
-      '<div style="font-weight:600;">'+esc(p.name)+'</div>'+
-      '<div class="row-sub">'+f(p.price)+EUR+' \u00B7 '+t('in_category').replace('{a}',esc(p.cat))+'</div></button>'+
+      '<div style="font-weight:600;">'+esc(pName(p))+'</div>'+
+      '<div class="row-sub">'+f(p.price)+EUR+' \u00B7 '+t('in_category').replace('{a}',esc(catLabel(p.cat)))+'</div></button>'+
       '<button class="qbtn" style="color:'+(p.fav?'var(--gold2)':'var(--text4)')+';" onclick="toggleFavFromSearch(\''+p.id+'\')">'+
       (p.fav?'\u2605':'\u2606')+'</button></div>';
   }).join('') : '<div class="empty-hint">'+t('no_match')+'</div>';
@@ -2345,12 +2456,12 @@ function openCatProducts(enc){
 }
 function renderCatProducts(){
   var st=getState();
-  document.getElementById('catprod-title').textContent=activeCatEdit;
+  document.getElementById('catprod-title').textContent=catLabel(activeCatEdit);
   var ps=st.products.filter(function(p){ return p.cat===activeCatEdit; });
   document.getElementById('catprod-body').innerHTML = ps.length ? ps.map(function(p){
     return '<div class="row">'+
       '<button class="row-main" onclick="editProduct(\''+p.id+'\')">'+
-      '<div style="font-weight:600;">'+esc(p.name)+'</div>'+
+      '<div style="font-weight:600;">'+esc(pName(p))+'</div>'+
       '<div class="row-sub">'+f(p.price)+EUR+'</div></button>'+
       '<button class="qbtn" style="color:'+(p.fav?'var(--gold2)':'var(--text4)')+';" onclick="toggleFav(\''+p.id+'\')">'+
       (p.fav?'\u2605':'\u2606')+'</button></div>';
@@ -2374,31 +2485,34 @@ function editProduct(id){
   editingProductId=id;
   if(id) for(var i=0;i<st.products.length;i++) if(st.products[i].id===id) p=st.products[i];
   document.getElementById('mp-title').textContent = p?t('edit_product'):t('new_product');
-  document.getElementById('mp-name').value = p?p.name:'';
+  var _nm = p && p.names ? p.names : (p && p.name ? {fi:p.name} : {});
+  ['fi','en','es','de','sv'].forEach(function(lc){ document.getElementById('mp-name-'+lc).value = _nm[lc]||''; });
   document.getElementById('mp-price').value = p?f(p.price):'';
   var sel=document.getElementById('mp-cat');
-  sel.innerHTML=st.categories.map(function(c){ return '<option value="'+esc(c)+'">'+esc(c)+'</option>'; }).join('');
+  sel.innerHTML=st.categories.map(function(c){ return '<option value="'+esc(c)+'">'+esc(catLabel(c))+'</option>'; }).join('');
   sel.value = p ? p.cat : (activeCatEdit||UNCAT);
   setFavField(p?!!p.fav:false);
+  setAskField(p?!!p.ask:false);
   document.getElementById('mp-del').style.display = p?'':'none';
   openModal('m-prod');
 }
 function saveProduct(){
   var st=getState();
-  var name=document.getElementById('mp-name').value.trim();
+  var names={}, any='';
+  ['fi','en','es','de','sv'].forEach(function(lc){ var v=document.getElementById('mp-name-'+lc).value.trim(); if(v){ names[lc]=v; if(!any) any=v; } });
   var price=parseAmt(document.getElementById('mp-price').value);
   var cat=document.getElementById('mp-cat').value;
-  if(!name){ toast(t('ts_name_required'),'err'); return; }
+  if(!any){ toast(t('ts_name_required'),'err'); return; }
   if(isNaN(price)||price<0){ toast(t('ts_check_price'),'err'); return; }
   if(editingProductId){
     for(var j=0;j<st.products.length;j++){
       if(st.products[j].id===editingProductId){
-        st.products[j].name=name; st.products[j].price=price;
-        st.products[j].cat=cat; st.products[j].fav=editingFav;
+        st.products[j].names=names; st.products[j].name=names.fi||any; st.products[j].price=price;
+        st.products[j].cat=cat; st.products[j].fav=editingFav; st.products[j].ask=editingAsk;
       }
     }
   } else {
-    st.products.push({id:uid('p'),name:name,price:price,cat:cat,fav:editingFav});
+    st.products.push({id:uid('p'),names:names,name:names.fi||any,price:price,cat:cat,fav:editingFav,ask:editingAsk});
   }
   if(!saveState(st)) return;
   closeModal('m-prod');
@@ -2412,7 +2526,7 @@ function deleteProduct(){
   for(var i=0;i<st.products.length;i++) if(st.products[i].id===editingProductId) p=st.products[i];
   if(!p) return;
   closeModal('m-prod');
-  showConfirm(t('del_product_q'), t('del_product_body').replace('{a}',p.name), function(){
+  showConfirm(t('del_product_q'), t('del_product_body').replace('{a}',pName(p)), function(){
     var st2=getState();
     st2.products=st2.products.filter(function(x){ return x.id!==editingProductId; });
     if(saveState(st2)){ renderCatProducts(); toast(t('ts_deleted'),'ok'); }
@@ -3955,6 +4069,7 @@ function applyUpdate(){
 
 /* ---------- INIT ---------- */
 applyAppearance();
+(function(){ var st=getState(); if(!st._seeded && (!st.products || !st.products.length)){ seedDefaults(st); saveState(st); } })();
 applyStaticText();
 renderHome();
 ensureFlag();

@@ -1,5 +1,5 @@
 {
-  "version": "1.03.00",
-  "cache": "mijaspub-v4",
-  "notes": "Batch 2: (1) Oma summa -nappi poistettu asiakkailta. (2) Kassanhoitajan Historia- ja Asetukset-sivujen Takaisin vie nyt kassanhoitajan sivulle (ei kioskiin). (3) Yläpalkin napit pysyvät samassa paikassa joka kielellä (napit kiinnitetty oikeaan, otsikko kutistuu). (4) Groups/ryhmät poistettu käytöstä kokonaan."
+  "version": "1.04.00",
+  "cache": "mijaspub-v6",
+  "notes": "Batch 3 (monikieliset tuotteet): Tuotteilla ja kategorioilla nimi 5 kielellä (fi/en/es/de/sv), varakieli suomi jos jokin puuttuu. Tuote-editorissa 5 nimikenttää + 'Kysy uudelta asiakkaalta' -rasti. Kategorian kynä avaa 5-kielisen nimieditorin (sisäinen tunniste pysyy, tuotelinkit eivät katkea). Uuden asiakkaan lisäys kysyy jokaisesta rastitetusta tuotteesta 'Lisätaanko: X (hinta)?' ja Kyllä lisää veloituksen (oletuksena Kuljetus saunalle 5 EUR ja Saunominen 12 EUR). Oletushinnasto siemennetty paperiversion mukaan (Oluet 2,5; Hartwall Aquarius Seltzer 3,5; Siideri 4; Energiajuoma 4; Limonadi 2,5; Vesi 1; Makkara 3; Tapas 3; Jaatelo 3; Vuokrapyyhe 2,5; Vuokra-uima-asu 2,5; Kuljetus 5; Saunominen 12). Kaikki muokattavissa editorissa. Korjaus: known-customer-kysely poistettu."
 }
