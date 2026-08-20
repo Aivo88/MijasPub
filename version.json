@@ -1,5 +1,5 @@
 {
-  "version": "1.06.00",
-  "cache": "mijaspub-v11",
-  "notes": "Batch 5: (1) Asiakkaan kieli muistetaan (uusi asiakas saa valitun kielen; avattaessa palautuu). (2) Uuden asiakkaan automaattiveloitukset yhteen tapahtumaan. (3+7) Paivaraportti tulostuu PDF:na valitulla kielella (helppo lahettaa sahkopostilla). (4) Sauna Mijas -logo skaalattu PWA-ikoneiksi (192/512) + header. (5) Rahahistoriassa Osto-tekstin tilalla tuotteen nimi. (6) Paivaraportissa voi selata paivia (nuolet + kalenteri). (8) Kotisivulla otsikko Sauna Mijas lipun vieressa. (9) Kassanhoitaja-otsikko omalle riville nappien ylapuolelle. (10) Shoppailussa isot kategorianapit, 2 tuotetta rinnakkain, ja tuotehaku."
+  "version": "1.07.00",
+  "cache": "mijaspub-v12",
+  "notes": "Batch 6: (1) manifest.json luotu (Sauna Mijas, PWA-ikonit). (2) Asiakkaan kieli palautuu oletuskieleen kun palataan kotisivulle (asiakkaan oma kieli silti muistissa). (3) Nimi jo kaytossa -ilmoituksen syy nyt oikealla kielella. (4) Tuotehaun placeholder seuraa kielta + korjattu suurennuslasi-kuvake (nayti aiemmin koodina). (5) Sauna Mijas -taustakuva kotisivulle (tumma navy-verho paalla). (6) Onboarding-kysymyksessa hinta omalla rivillaan isolla nimen alla."
 }

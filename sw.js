@@ -1,8 +1,8 @@
 // SE7EN V2 service worker
 // Bump CACHE on every release.
-const CACHE = 'mijaspub-v11';
+const CACHE = 'mijaspub-v12';
 const ASSETS = ['./', './index.html', './manifest.json', './header-default.png',
-                './icon-192.png', './icon-512.png'];
+                './icon-192.png', './icon-512.png', './bg.jpg'];
 
 // cache:'reload' is essential: without it the browser may serve these files from
 // its own HTTP cache (GitHub Pages sets max-age), so a freshly installed service

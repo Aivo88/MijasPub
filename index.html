@@ -153,6 +153,7 @@ input:focus,select:focus{border-color:var(--gold);}
   #prod-grid .prod-card{min-height:132px;}
   #prod-grid .prod-name{font-size:1.32em;}
   #prod-grid .prod-price{font-size:1.15em;}
+  #s-home{background:linear-gradient(rgba(11,18,32,0.84),rgba(11,18,32,0.93)), url('./bg.jpg') center/cover no-repeat;}
 </style>
 </head>
 <body>
@@ -239,7 +240,7 @@ input:focus,select:focus{border-color:var(--gold);}
       <button class="btn-full" style="min-height:70px;font-size:1.12em;background:var(--bg3);border-color:var(--gold);color:var(--gold2);" onclick="askCashierPin('cust')" data-t="cashier">Cashier</button>
     </div>
     <div id="pane-add" style="display:none;">
-      <div class="search-wrap" style="margin-bottom:0.7em;"><span style="color:var(--text4);">\uD83D\uDD0D</span><input type="text" id="cust-prod-search" placeholder="" oninput="custProdQuery=this.value; renderProds('prod-grid');"></div>
+      <div class="search-wrap" style="margin-bottom:0.7em;"><span style="color:var(--text4);">&#128269;</span><input type="text" id="cust-prod-search" placeholder="" oninput="custProdQuery=this.value; renderProds('prod-grid');"></div>
       <div class="cat-bar" id="cat-bar"></div>
       <div class="prod-grid" id="prod-grid"></div>
     </div>
@@ -625,6 +626,7 @@ input:focus,select:focus{border-color:var(--gold);}
 <div class="modal-bg" id="m-onboard">
   <div class="modal">
     <div class="modal-title" id="ob-title"></div>
+    <div id="ob-price" style="text-align:center;font-size:1.9em;font-weight:800;color:var(--gold2);margin:8px 0 2px;"></div>
     <div class="btn-row" style="margin-top:1em;">
       <button class="btn-full" style="background:var(--gbg);border-color:var(--green);color:var(--green);" onclick="obAnswer(true)" data-t="yes">Yes</button>
       <button class="btn-full" style="background:var(--rbg);border-color:var(--rborder);color:var(--red);" onclick="obAnswer(false)" data-t="no">No</button>
@@ -661,7 +663,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.06.00';
+var APP_VERSION = '1.07.00';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -686,7 +688,6 @@ var LANG={
   print:{en:'Print',fi:'Tulosta',es:'Imprimir',de:'Drucken',sv:'Skriv ut'},
   rep_product:{en:'Product',fi:'Tuote',es:'Producto',de:'Produkt',sv:'Produkt'},
   choose_category:{en:'Choose a category',fi:'Valitse kategoria',es:'Elige una categor\u00EDa',de:'Kategorie w\u00E4hlen',sv:'V\u00E4lj kategori'},
-  search_product:{en:'Search product',fi:'Etsi tuote',es:'Buscar producto',de:'Produkt suchen',sv:'S\u00F6k produkt'},
   uncategorized:{en:'Uncategorized',fi:'Luokittelematon',es:'Sin categor\u00EDa',de:'Nicht kategorisiert',sv:'Okategoriserad'},
   restore_defaults:{en:'Restore default products',fi:'Palauta oletustuotteet',es:'Restaurar productos predeterminados',de:'Standardprodukte wiederherstellen',sv:'\u00C5terst\u00E4ll standardprodukter'},
   restore_defaults_body:{en:'Adds the default sauna menu. Existing products are kept.',fi:'Lis\u00E4\u00E4 oletushinnaston. Nykyiset tuotteet s\u00E4ilyv\u00E4t.',es:'A\u00F1ade el men\u00FA predeterminado. Los productos actuales se mantienen.',de:'F\u00FCgt das Standardmen\u00FC hinzu. Vorhandene Produkte bleiben.',sv:'L\u00E4gger till standardmenyn. Befintliga produkter beh\u00E5lls.'},
@@ -1020,6 +1021,7 @@ var LANG={
   new_customer_prompt:{en:'New customer', fi:'Uusi asiakas', es:'Nuevo cliente', de:'Neuer Kunde', sv:'Ny kund'},
   // --- batch 11: confirm dialogs, merge/remove, split, update check ---
   name_in_use:{en:'Name already in use', fi:'Nimi on jo k\u00E4yt\u00F6ss\u00E4', es:'El nombre ya est\u00E1 en uso', de:'Name bereits vergeben', sv:'Namnet anv\u00E4nds redan'},
+  name_in_use_body:{en:'There is already a {a} with an open tab. Give this one a different name, e.g. {a} B.', fi:'{a} on jo avoinna. Anna t\u00E4lle eri nimi, esim. {a} B.', es:'Ya hay un {a} con cuenta abierta. Ponle un nombre distinto, p.ej. {a} B.', de:'Es gibt bereits {a} mit offener Rechnung. Gib diesem einen anderen Namen, z.B. {a} B.', sv:'Det finns redan en {a} med \u00F6ppen nota. Ge den h\u00E4r ett annat namn, t.ex. {a} B.'},
   change_name:{en:'Change name', fi:'Vaihda nimi', es:'Cambiar nombre', de:'Namen \u00E4ndern', sv:'\u00C4ndra namn'},
   no_merge_tabs:{en:'No other open tabs to merge with.', fi:'Ei muita avoimia piikkej\u00E4 yhdistett\u00E4v\u00E4ksi.', es:'No hay otras cuentas abiertas para combinar.', de:'Keine anderen offenen Deckel zum Zusammenf\u00FChren.', sv:'Inga andra \u00F6ppna notor att sl\u00E5 samman med.'},
   merge_q:{en:'Merge customers?', fi:'Yhdistet\u00E4\u00E4nk\u00F6 asiakkaat?', es:'\u00BFCombinar clientes?', de:'Kunden zusammenf\u00FChren?', sv:'Sl\u00E5 samman kunder?'},
@@ -1369,7 +1371,12 @@ function renderHeader(){
 }
 
 /* ---------- HOME ---------- */
-function goHome(){ cart={}; show('s-home'); renderHome(); }
+function goHome(){
+  cart={};
+  var st=getState(), def=(st.settings.defaultLang)||'fi';
+  if((st.settings.lang||'fi')!==def){ st.settings.lang=def; saveState(st); applyStaticText(); }
+  show('s-home'); renderHome();
+}
 function box(l,v,c,click){
   return '<div class="total-box"'+(click?' onclick="'+click+'"':'')+'><div class="total-lbl">'+l+
     '</div><div class="total-val '+c+'">'+v+'</div></div>';
@@ -1424,7 +1431,7 @@ function renderActive(){
   function T(fn){ try{ fn(); }catch(e){} }
   if(id==='s-home') T(renderHome);
   else if(id==='s-cashier') T(renderCashierHome);
-  else if(id==='s-cust'){ T(renderCustBalance); if(custView==='add'){ T(function(){renderCats('cat-bar');}); T(function(){renderProds('prod-grid');}); } else if(custView==='hist') T(renderHistory); }
+  else if(id==='s-cust'){ T(renderCustBalance); if(custView==='add'){ T(function(){renderCats('cat-bar');}); T(function(){renderProds('prod-grid');}); var _si=document.getElementById('cust-prod-search'); if(_si) _si.placeholder=t('search_product'); } else if(custView==='hist') T(renderHistory); }
   else if(id==='s-set') T(renderSettings);
   else if(id==='s-setpage') T(renderSetPage);
   else if(id==='s-cats') T(openCategories);
@@ -1501,12 +1508,8 @@ function askNewCustomer(prefill){
        apart later, so the name has to be made unique up front. */
     for(i=0;i<st.customers.length;i++){
       if(st.customers[i].name.toLowerCase()===name.toLowerCase()){
-        var pc=st.customers[i];
-        var g0 = pc.permanent ? findGroup(st,pc.groupId) : null;
-        var where = g0 ? (' in '+g0.name) : ' with an open tab';
         showConfirm(t('name_in_use'),
-          'There is already a '+st.customers[i].name+where+
-          '. Give this one a name you can tell apart, for example '+name+' B.',
+          t('name_in_use_body').replace(/\{a\}/g, st.customers[i].name),
           function(){ askNewCustomer(name+' '); },
           t('change_name'),
           'background:var(--bg3);border-color:var(--gold);color:var(--gold2);margin-bottom:0.6em;');
@@ -1776,7 +1779,8 @@ function obNext(){
     return;
   }
   var p=obQueue[obIdx];
-  document.getElementById('ob-title').textContent=t('add_q').replace('{a}',pName(p)+' ('+f(p.price)+EUR+')');
+  document.getElementById('ob-title').textContent=t('add_q').replace('{a}',pName(p));
+  document.getElementById('ob-price').textContent=f(p.price)+EUR;
   openModal('m-onboard');
 }
 function obAnswer(yes){
