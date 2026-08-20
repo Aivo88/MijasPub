@@ -1,5 +1,5 @@
 {
-  "version": "1.04.01",
-  "cache": "mijaspub-v7",
-  "notes": "Korjaus: oletustuotteet eivat ilmestyneet jos aiempi tila esti siemennyksen. Nyt oletushinnasto siemennetaan aina kun tuotelista on tyhja (itsestaan korjautuva), toistoturvallisesti ilman duplikaatteja. Lisaksi Kategoriat-sivulle 'Palauta oletustuotteet' -nappi jolla saa oletukset takaisin milloin vain (ei poista olemassa olevia)."
+  "version": "1.04.02",
+  "cache": "mijaspub-v8",
+  "notes": "Kielilipun onclick sidottu suoraan funktioksi (aiemmin merkkijonona setAttributella) - varmempi kaikilla laiteselaimilla. Sisaltaa myos 1.04.01 korjaukset: oletustuotteet siemennetaan aina kun lista on tyhja + 'Palauta oletustuotteet' -nappi."
 }

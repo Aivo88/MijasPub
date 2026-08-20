@@ -646,7 +646,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.04.01';
+var APP_VERSION = '1.04.02';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -1370,7 +1370,7 @@ function ensureFlag(){
   var acts=row.querySelector('.top-actions');
   if(!acts){ acts=document.createElement('div'); acts.className='top-actions'; row.appendChild(acts); }
   var fb=acts.querySelector('.flag-cyc');
-  if(!fb){ fb=document.createElement('button'); fb.className='flag-btn flag-cyc'; fb.setAttribute('onclick','cycleLang()'); acts.appendChild(fb); }
+  if(!fb){ fb=document.createElement('button'); fb.className='flag-btn flag-cyc'; fb.type='button'; fb.onclick=function(){ cycleLang(); }; acts.appendChild(fb); }
   fb.textContent=currentFlag();
 }
 function applyLang(v){
