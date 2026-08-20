@@ -1,5 +1,5 @@
 {
-  "version": "1.00.00",
-  "cache": "mijaspub-v1",
-  "notes": "MijasPub: SE7EN V2:sta haarautettu oma versio. localStorage-avain (mijaspub) ja välimuistin nimi (mijaspub-v1) eriytetty niin ettei data mene sekaisin Se7en V2:n kanssa. Pohja valmis räätälöintiä varten."
+  "version": "1.01.00",
+  "cache": "mijaspub-v2",
+  "notes": "Lenkkisauna-kioski: walk-in poistettu. Kotisivu = uusi asiakas + nimet + kielilippu + Kassanhoitaja-nappi. Asiakas napauttaa nimeään -> valikko (nimi + kynä, saldo, Aloita shoppailu, Historia, Kassanhoitaja, Valmis). Kassanhoitaja 4-num. PINin takana (oletus 0000, vaihdettavissa asetuksissa). Kassakoti: kaikkien saldot, kuittaus, hallinta. 60 s käyttämättömyys palauttaa kioskin kotiin. Kuitattu asiakas poistuu aktiivilistalta, tapahtumat säilyvät raakahistoriassa."
 }

@@ -134,6 +134,11 @@ input:focus,select:focus{border-color:var(--gold);}
   #printarea td,#printarea th{border:1px solid #bbb;padding:3px 5px;text-align:left;}
   #printarea .cols{column-count:2;column-gap:18px;}
 }
+  .flag-btn{background:none;border:none;font-size:1.5em;padding:2px 4px;opacity:0.4;cursor:pointer;line-height:1;}
+  .flag-btn.active{opacity:1;transform:scale(1.15);}
+  .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+  .pin-key{min-height:60px;font-size:1.4em;font-weight:700;background:var(--bg3);border:1.5px solid var(--gold);border-radius:10px;color:var(--gold2);cursor:pointer;}
+  .pin-key:active{opacity:0.7;}
 </style>
 </head>
 <body>
@@ -145,10 +150,7 @@ input:focus,select:focus{border-color:var(--gold);}
   <div class="top-bar">
     <div class="top-row">
       <div id="hdr-slot"></div>
-      <div class="top-actions">
-        <button class="btn-icon" onclick="openHistoryHub()" data-t="history">History</button>
-        <button class="btn-icon" onclick="openSettings()" data-t="settings">Settings</button>
-      </div>
+      <div class="top-actions" id="home-flags"></div>
     </div>
   </div>
   <div class="body-scroll">
@@ -156,9 +158,36 @@ input:focus,select:focus{border-color:var(--gold);}
     <div id="home-list"></div>
   </div>
   <div class="foot">
-    <div class="totals-row" id="home-totals"></div>
-    <div class="totals-row" id="home-totals2"></div>
-    <button class="btn-full" style="background:var(--gbg);border-color:var(--green);color:var(--green);" onclick="openWalkin()" data-t="walk_in">Walk-in</button>
+    <button class="btn-full" style="background:var(--bg3);border-color:var(--gold);color:var(--gold2);" onclick="askCashierPin('home')" data-t="cashier">Cashier</button>
+  </div>
+</div>
+
+<!-- CASHIER HOME -->
+<div class="screen" id="s-cashier">
+  <div class="top-bar">
+    <div class="top-row">
+      <div class="screen-title" data-t="cashier">Cashier</div>
+      <div class="top-actions">
+        <button class="btn-icon" onclick="openHistoryHub()" data-t="history">History</button>
+        <button class="btn-icon" onclick="openSettings()" data-t="settings">Settings</button>
+      </div>
+    </div>
+  </div>
+  <div class="body-scroll"><div id="cash-list"></div></div>
+  <div class="foot">
+    <div class="totals-row" id="cash-totals"></div>
+    <div class="totals-row" id="cash-totals2"></div>
+    <button class="btn-full" style="background:var(--bg3);border-color:var(--gold);color:var(--gold2);" onclick="goHome()" data-t="back">Back</button>
+  </div>
+</div>
+
+<!-- PIN -->
+<div class="modal-bg" id="m-pin">
+  <div class="modal">
+    <div class="modal-title" data-t="enter_pin">Enter PIN</div>
+    <div id="pin-dots" style="text-align:center;font-size:1.8em;letter-spacing:0.35em;color:var(--gold2);min-height:1.2em;margin:6px 0 14px;"></div>
+    <div id="pin-pad" class="pin-pad"></div>
+    <button class="btn-modal-cancel" onclick="closeModal('m-pin')" data-t="back">Back</button>
   </div>
 </div>
 
@@ -181,24 +210,25 @@ input:focus,select:focus{border-color:var(--gold);}
   <div class="top-bar">
     <div class="top-row">
       <div style="min-width:0;">
-        <button class="screen-title" id="cust-title" style="font-size:1.45em;padding:0;" onclick="openCustomerMenu()"></button>
+        <button class="screen-title" id="cust-title" style="font-size:1.45em;padding:0;" onclick="renameActiveCustomer()"></button>
         <div id="cust-balance" style="font-weight:700;margin-top:2px;"></div>
         <button id="cust-olddebt" style="display:none;margin-top:6px;background:var(--rbg);border:1.5px solid var(--red);border-radius:8px;padding:0.5em 0.8em;color:var(--red);font-weight:700;font-size:0.9em;" onclick="openOldDebt()"></button>
       </div>
 
     </div>
-    <div class="tabs">
-      <button class="tab active" id="tab-add" onclick="setCustTab('add')" data-t="add">Add</button>
-      <button class="tab" id="tab-bal" onclick="setCustTab('bal')" data-t="balance">Balance</button>
-      <button class="tab" id="tab-hist" onclick="setCustTab('hist')" data-t="history">History</button>
-    </div>
   </div>
   <div class="body-scroll" style="padding-top:0.5em;">
-    <div id="pane-add">
+    <div id="pane-menu">
+      <button class="btn-full" style="min-height:82px;font-size:1.25em;margin-bottom:0.8em;background:var(--gbg);border-color:var(--green);color:var(--green);" onclick="showCustView('add')" data-t="start_shopping">Start shopping</button>
+      <button class="btn-full" style="min-height:70px;font-size:1.12em;margin-bottom:0.8em;background:var(--bg3);border-color:var(--gold);color:var(--gold2);" onclick="showCustView('hist')" data-t="history">History</button>
+      <button class="btn-full" style="min-height:70px;font-size:1.12em;background:var(--bg3);border-color:var(--gold);color:var(--gold2);" onclick="askCashierPin('cust')" data-t="cashier">Cashier</button>
+    </div>
+    <div id="pane-add" style="display:none;">
       <div class="cat-bar" id="cat-bar"></div>
       <div class="prod-grid" id="prod-grid"></div>
     </div>
     <div id="pane-bal" style="display:none;">
+      <button class="btn-full" style="min-height:58px;font-size:1.1em;margin-bottom:1em;background:var(--gbg);border-color:var(--green);color:var(--green);" onclick="askBillSettled()" data-t="settle_bill">Settle bill</button>
       <div class="card-box">
         <div class="label" data-t="bal_credit_label">Customer hands over money</div>
         <button class="btn-full" style="background:var(--gbg);border-color:var(--green);color:var(--green);margin-bottom:0.5em;" onclick="balAction('credit')" data-t="add_credit">Add credit</button>
@@ -226,7 +256,7 @@ input:focus,select:focus{border-color:var(--gold);}
   </div>
   <div class="foot">
     <button class="btn-full" id="cust-custom-row" style="margin-bottom:0.57em;" onclick="promptCustomCust()" data-t="custom_amount">+ Custom amount</button>
-    <button class="btn-full" style="background:var(--bg3);border-color:var(--gold);color:var(--gold2);" onclick="backFromCustomer()" data-t="back">Back</button>
+    <button class="btn-full" id="cust-back-btn" style="background:var(--bg3);border-color:var(--gold);color:var(--gold2);" onclick="custBack()" data-t="done">Done</button>
   </div>
 </div>
 
@@ -588,7 +618,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.00.00';
+var APP_VERSION = '1.01.00';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -601,6 +631,16 @@ var EUR = ' \u20AC';   // rewritten from settings on load and on change
    development works everywhere immediately and can be translated later. */
 var LANGS=[['en','English'],['fi','Suomi'],['es','Espa\u00F1ol'],['de','Deutsch'],['sv','Svenska']];
 var LANG={
+  // --- kiosk / cashier / pin ---
+  cashier:{en:'Cashier',fi:'Kassanhoitaja',es:'Cajero',de:'Kasse',sv:'Kass\u00F6r'},
+  start_shopping:{en:'Start shopping',fi:'Aloita shoppailu',es:'Empezar a comprar',de:'Einkauf starten',sv:'B\u00F6rja handla'},
+  done:{en:'Done',fi:'Valmis',es:'Listo',de:'Fertig',sv:'Klar'},
+  enter_pin:{en:'Enter PIN',fi:'Sy\u00F6t\u00E4 PIN-koodi',es:'Introduce el PIN',de:'PIN eingeben',sv:'Ange PIN'},
+  wrong_pin:{en:'Wrong PIN',fi:'V\u00E4\u00E4r\u00E4 PIN-koodi',es:'PIN incorrecto',de:'Falsche PIN',sv:'Fel PIN'},
+  change_pin:{en:'Change PIN',fi:'Vaihda PIN-koodi',es:'Cambiar PIN',de:'PIN \u00E4ndern',sv:'\u00C4ndra PIN'},
+  rename:{en:'Rename',fi:'Nime\u00E4 uudelleen',es:'Renombrar',de:'Umbenennen',sv:'Byt namn'},
+  home_empty:{en:'Tap + New customer to start',fi:'Aloita napauttamalla + Uusi asiakas',es:'Toca + Nuevo cliente para empezar',de:'Auf + Neuer Kunde tippen',sv:'Tryck + Ny kund f\u00F6r att b\u00F6rja'},
+  ts_pin_set:{en:'PIN updated',fi:'PIN-koodi p\u00E4ivitetty',es:'PIN actualizado',de:'PIN aktualisiert',sv:'PIN uppdaterad'},
   // --- language / settings page ---
   language:        {en:'Language', fi:'Kieli', es:'Idioma', de:'Sprache', sv:'Spr\u00E5k'},
   currency_symbol: {en:'Currency symbol', fi:'Valuuttasymboli', es:'S\u00EDmbolo de moneda', de:'W\u00E4hrungssymbol', sv:'Valutasymbol'},
@@ -1022,7 +1062,7 @@ function blank(){
   return { customers:[], transactions:[], products:[], categories:[UNCAT],
     hiddenCustomers:[], groups:[], quickAmounts:[5,2,1,0.5,0.1],
     settings:{dayEnd:2,fontScale:1,cols:3,headerText:'Pub',headerImage:null,
-      tablesLabel:'Tables',tablesHidden:false,groupsLabel:'Groups',currency:'\u20AC',lang:'en',
+      tablesLabel:'Tables',tablesHidden:false,groupsLabel:'Groups',currency:'\u20AC',lang:'en',pin:'0000',
       autoBackup:{on:false,cycle:'weekly',day:0,hour:15,last:0}},
     _tablesSeeded:false };
 }
@@ -1049,6 +1089,7 @@ function getState(){
       migrateGroups(st);
       if(typeof s.currency!=='string' || !s.currency) s.currency='\u20AC';
       if(typeof s.lang!=='string') s.lang='en';
+      if(typeof s.pin!=='string' || !/^[0-9]{4}$/.test(s.pin)) s.pin='0000';
       if(!s.autoBackup || typeof s.autoBackup!=='object')
         s.autoBackup={ on:false, cycle:'weekly', day:0, hour:15, last:0 };
       if(typeof s.tablesHidden!=='boolean') s.tablesHidden=false;
@@ -1272,7 +1313,27 @@ function renderHome(){
   ensureTables();
   var st=getState();
   var open=st.customers.filter(function(c){ return !c.permanent; });
-
+  document.getElementById('home-list').innerHTML='<div class="cust-grid">'+
+    (open.length ? open.map(function(c){
+      return '<div class="cust-item"><button class="cust-item-tap" style="width:100%;" onclick="openCustomer(\''+c.id+'\')">'+
+        '<div class="cust-name">'+esc(c.name)+'</div></button></div>';
+    }).join('') : '<div class="empty-hint" style="grid-column:1/-1;">'+t('home_empty')+'</div>')+'</div>';
+  renderHomeFlags();
+}
+function renderHomeFlags(){
+  var st=getState(), cur=(st.settings&&st.settings.lang)||'en';
+  var FLAGS={en:'\uD83C\uDDEC\uD83C\uDDE7',fi:'\uD83C\uDDEB\uD83C\uDDEE',es:'\uD83C\uDDEA\uD83C\uDDF8',de:'\uD83C\uDDE9\uD83C\uDDEA',sv:'\uD83C\uDDF8\uD83C\uDDEA'};
+  var el=document.getElementById('home-flags'); if(!el) return;
+  el.innerHTML=LANGS.map(function(L){
+    return '<button class="flag-btn'+(cur===L[0]?' active':'')+'" onclick="pickHomeLang(\''+L[0]+'\')">'+FLAGS[L[0]]+'</button>';
+  }).join('');
+}
+function pickHomeLang(v){ saveLang(v); renderHome(); }
+function openCashierHome(){ show('s-cashier'); renderCashierHome(); }
+function renderCashierHome(){
+  ensureTables();
+  var st=getState();
+  var open=st.customers.filter(function(c){ return !c.permanent; });
   var groupCards=getGroups(st).filter(function(g){ return !g.hidden; }).map(function(g){
     var gb=groupBalance(st,g.id);
     return '<div class="cust-item" style="border-color:var(--gold);">'+
@@ -1280,8 +1341,7 @@ function renderHome(){
       '<div class="cust-name" style="color:var(--gold2);">'+esc(g.name)+'</div>'+
       '<div class="cust-bal '+balClass(gb)+'">'+balText(gb)+'</div></button></div>';
   }).join('');
-
-  document.getElementById('home-list').innerHTML='<div class="cust-grid">'+groupCards+
+  document.getElementById('cash-list').innerHTML='<div class="cust-grid">'+groupCards+
     open.map(function(c){
       var b=balanceOf(st,c.id);
       var od=writtenOffOf(st,c.id);
@@ -1292,7 +1352,6 @@ function renderHome(){
         '<div class="cust-bal '+balClass(b)+'">'+balText(b)+'</div></button>'+
         '<button class="btn-settled-list" onclick="askBillSettled(\''+c.id+'\')">'+t('settled')+'</button></div>';
     }).join('')+'</div>';
-
   var bd=todayBarDate(), cash=0, card=0;
   st.transactions.forEach(function(t){
     if(txBarDate(t)!==bd) return;
@@ -1300,12 +1359,12 @@ function renderHome(){
   });
   var owed=0;
   st.customers.forEach(function(c){ var b=balanceOf(st,c.id); if(b<0) owed+=Math.abs(b); });
-
-  document.getElementById('home-totals').innerHTML=
+  document.getElementById('cash-totals').innerHTML=
     box(t('total'),f(cash+card)+EUR,'green')+box(t('total_owed'),f(owed)+EUR,'gold');
-  document.getElementById('home-totals2').innerHTML=
+  document.getElementById('cash-totals2').innerHTML=
     box(t('cash'),f(cash)+EUR,'green')+box(t('card'),f(card)+EUR,'blue');
 }
+
 
 /* Everyone who has ever had a transaction, newest visit first. Walk-in
    pseudo-customers are excluded; they are not real people. */
@@ -1484,7 +1543,7 @@ function openCustomer(id){
   activeCustomerId=id; cart={}; activeCat='__fav__';
   setCustTitle(c.name);
   show('s-cust');
-  setCustTab('add');
+  showCustView('menu');
   renderCustBalance();
 }
 function backFromCustomer(){ cart={}; goHome(); }
@@ -1497,19 +1556,82 @@ function renderCustBalance(){
   if(w>0){ ob.style.display=''; ob.textContent=t('old_debt_collect').replace('{a}',f(w)+EUR); }
   else ob.style.display='none';
 }
-function setCustTab(t){
-  custTab=t;
-  ['add','bal','hist'].forEach(function(k){
-    document.getElementById('tab-'+k).classList.toggle('active',k===t);
-    document.getElementById('pane-'+k).style.display = k===t?'':'none';
+var custView='menu';
+function showCustView(v){
+  custView=v; custTab=v;
+  ['menu','add','bal','hist'].forEach(function(k){
+    var el=document.getElementById('pane-'+k);
+    if(el) el.style.display = k===v ? '' : 'none';
   });
-  document.getElementById('cust-custom-row').style.display = t==='add' ? '' : 'none';
-  if(t==='add'){ renderCats('cat-bar'); renderProds('prod-grid'); renderCart(); }
+  document.getElementById('cust-custom-row').style.display = v==='add' ? '' : 'none';
+  var bb=document.getElementById('cust-back-btn');
+  if(bb) bb.textContent = (v==='menu') ? t('done') : t('back');
+  if(v==='add'){ renderCats('cat-bar'); renderProds('prod-grid'); renderCart(); }
   else {
-    document.getElementById('cart-wrap').style.display='none';
-    if(t==='hist') renderHistory();
+    var cw=document.getElementById('cart-wrap'); if(cw) cw.style.display='none';
+    if(v==='hist') renderHistory();
   }
+  renderCustBalance();
 }
+function custBack(){
+  if(custView==='menu'){ cart={}; goHome(); }
+  else { cart={}; showCustView('menu'); }
+}
+function renameActiveCustomer(){
+  var st=getState(), c=findCustomer(st,activeCustomerId); if(!c) return;
+  askText(t('rename'), c.name, function(v){
+    v=(v||'').trim(); if(!v) return;
+    var st2=getState(), c2=findCustomer(st2,activeCustomerId); if(!c2) return;
+    c2.name=v; if(saveState(st2)){ setCustTitle(v); renderCustBalance(); }
+  });
+}
+/* ---------- CASHIER PIN ---------- */
+var pinBuf='', pinDest=null;
+function askCashierPin(dest){ pinDest=dest; pinBuf=''; renderPinPad(); updatePinDots(); openModal('m-pin'); }
+function renderPinPad(){
+  var keys=['1','2','3','4','5','6','7','8','9','C','0','\u232B'];
+  document.getElementById('pin-pad').innerHTML=keys.map(function(k){
+    return '<button class="pin-key" onclick="pinKey(\''+k+'\')">'+k+'</button>';
+  }).join('');
+}
+function updatePinDots(){
+  var s2=''; for(var i=0;i<4;i++) s2 += i<pinBuf.length ? '\u25CF' : '\u25CB';
+  document.getElementById('pin-dots').textContent=s2;
+}
+function pinKey(k){
+  if(k==='C') pinBuf='';
+  else if(k==='\u232B') pinBuf=pinBuf.slice(0,-1);
+  else if(pinBuf.length<4) pinBuf+=k;
+  updatePinDots();
+  if(pinBuf.length===4) setTimeout(checkPin,140);
+}
+function checkPin(){
+  var st=getState(), good=(st.settings&&st.settings.pin)||'0000';
+  if(pinBuf!==good){ pinBuf=''; updatePinDots(); toast(t('wrong_pin'),'err'); return; }
+  closeModal('m-pin');
+  var dest=pinDest; pinDest=null; pinBuf='';
+  if(dest==='home') openCashierHome();
+  else if(dest==='cust') showCustView('bal');
+}
+function changePinFlow(){
+  askText(t('change_pin'), '', function(v){
+    v=(v||'').trim();
+    if(!/^[0-9]{4}$/.test(v)){ toast(t('wrong_pin'),'err'); return; }
+    var st=getState(); st.settings.pin=v;
+    if(saveState(st)){ renderSettings(); toast(t('ts_pin_set'),'ok'); }
+  });
+}
+/* ---------- IDLE AUTO-RETURN (60s) ---------- */
+var idleTimer=null;
+function resetIdle(){
+  if(idleTimer) clearTimeout(idleTimer);
+  idleTimer=setTimeout(function(){
+    if(document.querySelector('.modal-bg.open')){ resetIdle(); return; }
+    if(document.getElementById('s-home').classList.contains('active')){ resetIdle(); return; }
+    cart={}; goHome();
+  },60000);
+}
+['click','touchstart','keydown'].forEach(function(ev){ document.addEventListener(ev,resetIdle,true); });
 
 /* ---------- CATEGORY BAR + PRODUCT GRID ---------- */
 function usedCategories(st){
@@ -1738,7 +1860,8 @@ function finishSettle(st,c){
     st.customers=st.customers.filter(function(x){ return x.id!==c.id; });
   }
   saveState(st);
-  goHome();
+  if(document.getElementById('s-cashier').classList.contains('active')) openCashierHome();
+  else goHome();
   return {balance:bal};
 }
 
@@ -3418,6 +3541,7 @@ function renderSettings(){
     menuRow(t('m_appearance'),t('m_textsize')+' '+Math.round(s.fontScale*100)+'% \u00B7 '+s.cols+' '+t('m_cards_per_row'), "openSetPage('look')")+
     menuRow(t('m_barday'),t('m_ends_at')+' '+pad2(s.dayEnd)+':00', "openSetPage('day')")+
     menuRow(t('currency_and_language'), s.currency+' \u00B7 '+(function(){var n='English';LANGS.forEach(function(L){if(L[0]===s.lang)n=L[1];});return n;})(), "openSetPage('region')")+
+    menuRow(t('change_pin'), '\u2022\u2022\u2022\u2022', 'changePinFlow()')+
     menuRow(t('m_cats_products'), st.products.length+' '+(st.products.length===1?t('m_product'):t('m_products')), 'openCategories()')+
     menuRow(esc(groupsLabel(st)), getGroups(st).length+' '+(getGroups(st).length===1?t('m_group'):t('m_groups')), 'openTablesManage()')+
     menuRow(t('customers'),t('m_customers_row'), 'openCustomersManage()')+
@@ -3813,6 +3937,7 @@ function applyUpdate(){
 applyAppearance();
 applyStaticText();
 renderHome();
+resetIdle();
 setTimeout(runAutoBackupCheck, 1500);
 if('serviceWorker' in navigator){
   window.addEventListener('load',function(){
