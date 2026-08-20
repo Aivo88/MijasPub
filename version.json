@@ -1,5 +1,5 @@
 {
-  "version": "1.01.00",
-  "cache": "mijaspub-v2",
-  "notes": "Lenkkisauna-kioski: walk-in poistettu. Kotisivu = uusi asiakas + nimet + kielilippu + Kassanhoitaja-nappi. Asiakas napauttaa nimeään -> valikko (nimi + kynä, saldo, Aloita shoppailu, Historia, Kassanhoitaja, Valmis). Kassanhoitaja 4-num. PINin takana (oletus 0000, vaihdettavissa asetuksissa). Kassakoti: kaikkien saldot, kuittaus, hallinta. 60 s käyttämättömyys palauttaa kioskin kotiin. Kuitattu asiakas poistuu aktiivilistalta, tapahtumat säilyvät raakahistoriassa."
+  "version": "1.02.00",
+  "cache": "mijaspub-v3",
+  "notes": "Batch 1: (1) Yksi kielilippu joka kiertää kielet napautuksella ja seuraa joka sivulle; 60 s idle palauttaa oletuskieleen (suomi) ja kioskin kotiin; kieli poistettu Asetusten Valuutta-osiosta. (2) Asiakassivulla nimi ja saldo suurella fontilla. (3) Kassanhoitajan sivu: asiakkaat aakkosjärjestyksessä omilla riveillä, nimi + summa + Maksettu; kuittaus palaa kassasivulle. (4) Admin-takaovi: lisää asiakas nimellä 'Admin' -> pääsee kassaan ilman PINiä (esim. PINin vaihtoon). Korjaukset: Tables/ryhmät oletuksena pois (kytkettävissä ryhmähallinnasta); PIN-tuplauskosketus ei enää näytä väärää 'väärä PIN' -ilmoitusta."
 }

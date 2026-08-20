@@ -136,6 +136,7 @@ input:focus,select:focus{border-color:var(--gold);}
 }
   .flag-btn{background:none;border:none;font-size:1.5em;padding:2px 4px;opacity:0.4;cursor:pointer;line-height:1;}
   .flag-btn.active{opacity:1;transform:scale(1.15);}
+  .flag-cyc{opacity:1;}
   .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
   .pin-key{min-height:60px;font-size:1.4em;font-weight:700;background:var(--bg3);border:1.5px solid var(--gold);border-radius:10px;color:var(--gold2);cursor:pointer;}
   .pin-key:active{opacity:0.7;}
@@ -210,8 +211,8 @@ input:focus,select:focus{border-color:var(--gold);}
   <div class="top-bar">
     <div class="top-row">
       <div style="min-width:0;">
-        <button class="screen-title" id="cust-title" style="font-size:1.45em;padding:0;" onclick="renameActiveCustomer()"></button>
-        <div id="cust-balance" style="font-weight:700;margin-top:2px;"></div>
+        <button class="screen-title" id="cust-title" style="font-size:2.4em;padding:0;line-height:1.1;text-align:left;" onclick="renameActiveCustomer()"></button>
+        <div id="cust-balance" style="font-weight:800;font-size:1.7em;margin-top:6px;"></div>
         <button id="cust-olddebt" style="display:none;margin-top:6px;background:var(--rbg);border:1.5px solid var(--red);border-radius:8px;padding:0.5em 0.8em;color:var(--red);font-weight:700;font-size:0.9em;" onclick="openOldDebt()"></button>
       </div>
 
@@ -618,7 +619,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.01.00';
+var APP_VERSION = '1.02.00';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -632,6 +633,7 @@ var EUR = ' \u20AC';   // rewritten from settings on load and on change
 var LANGS=[['en','English'],['fi','Suomi'],['es','Espa\u00F1ol'],['de','Deutsch'],['sv','Svenska']];
 var LANG={
   // --- kiosk / cashier / pin ---
+  currency:{en:'Currency',fi:'Valuutta',es:'Moneda',de:'W\u00E4hrung',sv:'Valuta'},
   cashier:{en:'Cashier',fi:'Kassanhoitaja',es:'Cajero',de:'Kasse',sv:'Kass\u00F6r'},
   start_shopping:{en:'Start shopping',fi:'Aloita shoppailu',es:'Empezar a comprar',de:'Einkauf starten',sv:'B\u00F6rja handla'},
   done:{en:'Done',fi:'Valmis',es:'Listo',de:'Fertig',sv:'Klar'},
@@ -1062,7 +1064,7 @@ function blank(){
   return { customers:[], transactions:[], products:[], categories:[UNCAT],
     hiddenCustomers:[], groups:[], quickAmounts:[5,2,1,0.5,0.1],
     settings:{dayEnd:2,fontScale:1,cols:3,headerText:'Pub',headerImage:null,
-      tablesLabel:'Tables',tablesHidden:false,groupsLabel:'Groups',currency:'\u20AC',lang:'en',pin:'0000',
+      tablesLabel:'Tables',tablesHidden:true,groupsLabel:'Groups',currency:'\u20AC',lang:'fi',defaultLang:'fi',adminName:'Admin',pin:'0000',
       autoBackup:{on:false,cycle:'weekly',day:0,hour:15,last:0}},
     _tablesSeeded:false };
 }
@@ -1088,11 +1090,13 @@ function getState(){
       if(!Array.isArray(st.quickAmounts)) st.quickAmounts=[5,2,1,0.5,0.1];
       migrateGroups(st);
       if(typeof s.currency!=='string' || !s.currency) s.currency='\u20AC';
-      if(typeof s.lang!=='string') s.lang='en';
+      if(typeof s.lang!=='string') s.lang='fi';
+      if(typeof s.defaultLang!=='string') s.defaultLang='fi';
+      if(typeof s.adminName!=='string' || !s.adminName) s.adminName='Admin';
       if(typeof s.pin!=='string' || !/^[0-9]{4}$/.test(s.pin)) s.pin='0000';
       if(!s.autoBackup || typeof s.autoBackup!=='object')
         s.autoBackup={ on:false, cycle:'weekly', day:0, hour:15, last:0 };
-      if(typeof s.tablesHidden!=='boolean') s.tablesHidden=false;
+      if(typeof s.tablesHidden!=='boolean') s.tablesHidden=true;
       if(typeof s.headerImage==='undefined') s.headerImage=null;
       return st;
     }
@@ -1148,6 +1152,7 @@ function show(id){
   var ss=document.querySelectorAll('.screen');
   for(var i=0;i<ss.length;i++) ss[i].classList.remove('active');
   document.getElementById(id).classList.add('active');
+  ensureFlag();
 }
 function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
@@ -1318,40 +1323,65 @@ function renderHome(){
       return '<div class="cust-item"><button class="cust-item-tap" style="width:100%;" onclick="openCustomer(\''+c.id+'\')">'+
         '<div class="cust-name">'+esc(c.name)+'</div></button></div>';
     }).join('') : '<div class="empty-hint" style="grid-column:1/-1;">'+t('home_empty')+'</div>')+'</div>';
-  renderHomeFlags();
 }
-function renderHomeFlags(){
-  var st=getState(), cur=(st.settings&&st.settings.lang)||'en';
-  var FLAGS={en:'\uD83C\uDDEC\uD83C\uDDE7',fi:'\uD83C\uDDEB\uD83C\uDDEE',es:'\uD83C\uDDEA\uD83C\uDDF8',de:'\uD83C\uDDE9\uD83C\uDDEA',sv:'\uD83C\uDDF8\uD83C\uDDEA'};
-  var el=document.getElementById('home-flags'); if(!el) return;
-  el.innerHTML=LANGS.map(function(L){
-    return '<button class="flag-btn'+(cur===L[0]?' active':'')+'" onclick="pickHomeLang(\''+L[0]+'\')">'+FLAGS[L[0]]+'</button>';
-  }).join('');
+function currentFlag(){
+  var st=getState(), cur=(st.settings&&st.settings.lang)||'fi';
+  var F={en:'\uD83C\uDDEC\uD83C\uDDE7',fi:'\uD83C\uDDEB\uD83C\uDDEE',es:'\uD83C\uDDEA\uD83C\uDDF8',de:'\uD83C\uDDE9\uD83C\uDDEA',sv:'\uD83C\uDDF8\uD83C\uDDEA'};
+  return F[cur]||F.fi;
 }
-function pickHomeLang(v){ saveLang(v); renderHome(); }
+function ensureFlag(){
+  var scr=document.querySelector('.screen.active'); if(!scr) return;
+  var row=scr.querySelector('.top-row'); if(!row) return;
+  var acts=row.querySelector('.top-actions');
+  if(!acts){ acts=document.createElement('div'); acts.className='top-actions'; row.appendChild(acts); }
+  var fb=acts.querySelector('.flag-cyc');
+  if(!fb){ fb=document.createElement('button'); fb.className='flag-btn flag-cyc'; fb.setAttribute('onclick','cycleLang()'); acts.appendChild(fb); }
+  fb.textContent=currentFlag();
+}
+function applyLang(v){
+  var st=getState(); st.settings.lang=v; saveState(st);
+  applyAppearance(); applyStaticText();
+  try{ renderSetPage(); }catch(e){}
+  try{ renderSettings(); }catch(e){}
+  ensureFlag(); renderActive();
+}
+function cycleLang(){
+  var st=getState(), order=LANGS.map(function(L){ return L[0]; });
+  var cur=(st.settings&&st.settings.lang)||'fi';
+  var i=order.indexOf(cur); if(i<0) i=order.indexOf('fi');
+  applyLang(order[(i+1)%order.length]);
+}
+function renderActive(){
+  var scr=document.querySelector('.screen.active'); var id=scr?scr.id:'';
+  if(id==='s-home') renderHome();
+  else if(id==='s-cashier') renderCashierHome();
+  else if(id==='s-cust'){ renderCustBalance(); if(custView==='add'){ renderCats('cat-bar'); renderProds('prod-grid'); } else if(custView==='hist') renderHistory(); }
+}
 function openCashierHome(){ show('s-cashier'); renderCashierHome(); }
 function renderCashierHome(){
   ensureTables();
   var st=getState();
-  var open=st.customers.filter(function(c){ return !c.permanent; });
-  var groupCards=getGroups(st).filter(function(g){ return !g.hidden; }).map(function(g){
+  var custs=st.customers.filter(function(c){ return !c.permanent; })
+    .slice().sort(function(a,b){ return (a.name||'').localeCompare((b.name||''),'fi',{sensitivity:'base'}); });
+  var groups=getGroups(st).filter(function(g){ return !g.hidden; });
+  var groupHtml=groups.map(function(g){
     var gb=groupBalance(st,g.id);
-    return '<div class="cust-item" style="border-color:var(--gold);">'+
-      '<button class="cust-item-tap" onclick="openTables(\''+g.id+'\')">'+
-      '<div class="cust-name" style="color:var(--gold2);">'+esc(g.name)+'</div>'+
-      '<div class="cust-bal '+balClass(gb)+'">'+balText(gb)+'</div></button></div>';
+    return '<div class="row" style="border-color:var(--gold);">'+
+      '<button class="row-main" style="background:none;border:none;text-align:left;cursor:pointer;color:inherit;" onclick="openTables(\''+g.id+'\')">'+
+      '<div style="font-weight:700;font-size:1.1em;color:var(--gold2);">'+esc(g.name)+'</div></button>'+
+      '<div class="cust-bal '+balClass(gb)+'" style="margin:0 10px;white-space:nowrap;">'+balText(gb)+'</div></div>';
   }).join('');
-  document.getElementById('cash-list').innerHTML='<div class="cust-grid">'+groupCards+
-    open.map(function(c){
-      var b=balanceOf(st,c.id);
-      var od=writtenOffOf(st,c.id);
-      var mark=od>0?' <span style="color:var(--red);font-weight:800;" title="Old debt">!</span>':'';
-      return '<div class="cust-item">'+
-        '<button class="cust-item-tap" onclick="openCustomer(\''+c.id+'\')">'+
-        '<div class="cust-name">'+esc(c.name)+mark+'</div>'+
-        '<div class="cust-bal '+balClass(b)+'">'+balText(b)+'</div></button>'+
-        '<button class="btn-settled-list" onclick="askBillSettled(\''+c.id+'\')">'+t('settled')+'</button></div>';
-    }).join('')+'</div>';
+  var rows=custs.map(function(c){
+    var b=balanceOf(st,c.id);
+    var od=writtenOffOf(st,c.id);
+    var mark=od>0?' <span style="color:var(--red);font-weight:800;" title="Old debt">!</span>':'';
+    return '<div class="row">'+
+      '<button class="row-main" style="background:none;border:none;text-align:left;cursor:pointer;color:inherit;" onclick="openCustomer(\''+c.id+'\')">'+
+      '<div style="font-weight:700;font-size:1.1em;">'+esc(c.name)+mark+'</div></button>'+
+      '<div class="cust-bal '+balClass(b)+'" style="margin:0 10px;white-space:nowrap;">'+balText(b)+'</div>'+
+      '<button class="btn-settled-list" onclick="askBillSettled(\''+c.id+'\')">'+t('settled')+'</button></div>';
+  }).join('');
+  document.getElementById('cash-list').innerHTML = groupHtml + (rows || '<div class="empty-hint">'+t('home_empty')+'</div>');
   var bd=todayBarDate(), cash=0, card=0;
   st.transactions.forEach(function(t){
     if(txBarDate(t)!==bd) return;
@@ -1398,6 +1428,7 @@ function isPerson(st,id){
 function askNewCustomer(prefill){
   askText(t('new_customer_prompt'),prefill||'',function(name){
     var st=getState(), i;
+    if(name && name.trim().toLowerCase()===((st.settings.adminName||'Admin').toLowerCase())){ openCashierHome(); return; }
     /* Two people called Dave on the same night would be impossible to tell
        apart later, so the name has to be made unique up front. */
     for(i=0;i<st.customers.length;i++){
@@ -1598,14 +1629,16 @@ function updatePinDots(){
   var s2=''; for(var i=0;i<4;i++) s2 += i<pinBuf.length ? '\u25CF' : '\u25CB';
   document.getElementById('pin-dots').textContent=s2;
 }
+var pinTimer=null;
 function pinKey(k){
   if(k==='C') pinBuf='';
   else if(k==='\u232B') pinBuf=pinBuf.slice(0,-1);
   else if(pinBuf.length<4) pinBuf+=k;
   updatePinDots();
-  if(pinBuf.length===4) setTimeout(checkPin,140);
+  if(pinBuf.length===4){ if(pinTimer) clearTimeout(pinTimer); pinTimer=setTimeout(function(){ pinTimer=null; checkPin(); },140); }
 }
 function checkPin(){
+  if(!document.getElementById('m-pin').classList.contains('open')) return;
   var st=getState(), good=(st.settings&&st.settings.pin)||'0000';
   if(pinBuf!==good){ pinBuf=''; updatePinDots(); toast(t('wrong_pin'),'err'); return; }
   closeModal('m-pin');
@@ -1627,7 +1660,10 @@ function resetIdle(){
   if(idleTimer) clearTimeout(idleTimer);
   idleTimer=setTimeout(function(){
     if(document.querySelector('.modal-bg.open')){ resetIdle(); return; }
-    if(document.getElementById('s-home').classList.contains('active')){ resetIdle(); return; }
+    var st=getState(), def=(st.settings&&st.settings.defaultLang)||'fi';
+    var atHome=document.getElementById('s-home').classList.contains('active');
+    if(atHome && (st.settings.lang||'fi')===def){ resetIdle(); return; }
+    if((st.settings.lang||'fi')!==def){ st.settings.lang=def; saveState(st); applyStaticText(); }
     cart={}; goHome();
   },60000);
 }
@@ -3540,7 +3576,7 @@ function renderSettings(){
     menuRow(t('m_header'), s.headerImage?t('m_header_img'):((s.headerText&&s.headerText!=='Pub')?s.headerText:t('m_header_logo')), "openSetPage('header')")+
     menuRow(t('m_appearance'),t('m_textsize')+' '+Math.round(s.fontScale*100)+'% \u00B7 '+s.cols+' '+t('m_cards_per_row'), "openSetPage('look')")+
     menuRow(t('m_barday'),t('m_ends_at')+' '+pad2(s.dayEnd)+':00', "openSetPage('day')")+
-    menuRow(t('currency_and_language'), s.currency+' \u00B7 '+(function(){var n='English';LANGS.forEach(function(L){if(L[0]===s.lang)n=L[1];});return n;})(), "openSetPage('region')")+
+    menuRow(t('currency'), s.currency, "openSetPage('region')")+
     menuRow(t('change_pin'), '\u2022\u2022\u2022\u2022', 'changePinFlow()')+
     menuRow(t('m_cats_products'), st.products.length+' '+(st.products.length===1?t('m_product'):t('m_products')), 'openCategories()')+
     menuRow(esc(groupsLabel(st)), getGroups(st).length+' '+(getGroups(st).length===1?t('m_group'):t('m_groups')), 'openTablesManage()')+
@@ -3581,16 +3617,11 @@ function renderSetPage(){
       '<select onchange="setDayEnd(this.value)">'+hours+'</select>'+
       '<div class="hint">'+t('sp_barday_hint')+'</div></div>';
   } else if(setPage==='region'){
-    title=t('currency_and_language');
+    title=t('currency');
     h='<div class="card-box"><div class="label">'+t('currency_symbol')+'</div>'+
       '<div class="field"><input type="text" id="set-currency" value="'+esc(s.currency)+'" placeholder="\u20AC" maxlength="4"></div>'+
       '<button class="btn-full" onclick="saveCurrency()">'+t('save')+'</button>'+
-      '<div class="hint">'+t('sp_currency_hint')+'</div></div>'+
-      '<div class="card-box"><div class="label">'+t('language')+'</div>'+
-      '<select id="set-lang" onchange="saveLang(this.value)">'+
-      LANGS.map(function(L){ return '<option value="'+L[0]+'"'+(s.lang===L[0]?' selected':'')+'>'+L[1]+'</option>'; }).join('')+
-      '</select>'+
-      '<div class="hint">'+t('lang_hint')+'</div></div>';
+      '<div class="hint">'+t('sp_currency_hint')+'</div></div>';
   } else if(setPage==='cash'){
     title=t('m_cashflow');
     h='<div class="card-box">'+
@@ -3937,6 +3968,7 @@ function applyUpdate(){
 applyAppearance();
 applyStaticText();
 renderHome();
+ensureFlag();
 resetIdle();
 setTimeout(runAutoBackupCheck, 1500);
 if('serviceWorker' in navigator){
