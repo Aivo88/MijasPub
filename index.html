@@ -146,6 +146,13 @@ input:focus,select:focus{border-color:var(--gold);}
   #prod-grid .prod-price{font-size:1.1em;}
   #home-list .cust-name{font-size:1.55em;}
   #home-list .cust-item-tap{min-height:80px;display:flex;align-items:center;justify-content:center;}
+  #cat-bar{display:grid;grid-template-columns:1fr 1fr;gap:0.6em;margin-bottom:0.8em;}
+  .cat-big{min-height:72px;font-size:1.3em;font-weight:700;background:var(--bg3);border:1.6px solid var(--gold);border-radius:12px;color:var(--gold2);cursor:pointer;padding:0.5em;line-height:1.15;}
+  .cat-big.active{background:var(--gbg);border-color:var(--green);color:var(--green);}
+  #prod-grid{grid-template-columns:1fr 1fr !important;gap:0.7em;}
+  #prod-grid .prod-card{min-height:132px;}
+  #prod-grid .prod-name{font-size:1.32em;}
+  #prod-grid .prod-price{font-size:1.15em;}
 </style>
 </head>
 <body>
@@ -157,6 +164,7 @@ input:focus,select:focus{border-color:var(--gold);}
   <div class="top-bar">
     <div class="top-row">
       <div id="hdr-slot"></div>
+      <div class="screen-title" id="home-title" style="flex:1 1 auto;min-width:0;">Sauna Mijas</div>
       <div class="top-actions" id="home-flags"></div>
     </div>
   </div>
@@ -172,8 +180,8 @@ input:focus,select:focus{border-color:var(--gold);}
 <!-- CASHIER HOME -->
 <div class="screen" id="s-cashier">
   <div class="top-bar">
-    <div class="top-row">
-      <div class="screen-title" data-t="cashier">Cashier</div>
+    <div class="top-row"><div class="screen-title" data-t="cashier" style="flex:1 1 auto;">Cashier</div></div>
+    <div class="top-row" style="justify-content:flex-end;margin-top:0.4em;">
       <div class="top-actions">
         <button class="btn-icon" onclick="openHistoryHub()" data-t="history">History</button>
         <button class="btn-icon" onclick="openSettings()" data-t="settings">Settings</button>
@@ -231,6 +239,7 @@ input:focus,select:focus{border-color:var(--gold);}
       <button class="btn-full" style="min-height:70px;font-size:1.12em;background:var(--bg3);border-color:var(--gold);color:var(--gold2);" onclick="askCashierPin('cust')" data-t="cashier">Cashier</button>
     </div>
     <div id="pane-add" style="display:none;">
+      <div class="search-wrap" style="margin-bottom:0.7em;"><span style="color:var(--text4);">\uD83D\uDD0D</span><input type="text" id="cust-prod-search" placeholder="" oninput="custProdQuery=this.value; renderProds('prod-grid');"></div>
       <div class="cat-bar" id="cat-bar"></div>
       <div class="prod-grid" id="prod-grid"></div>
     </div>
@@ -652,7 +661,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.05.00';
+var APP_VERSION = '1.06.00';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -677,6 +686,7 @@ var LANG={
   print:{en:'Print',fi:'Tulosta',es:'Imprimir',de:'Drucken',sv:'Skriv ut'},
   rep_product:{en:'Product',fi:'Tuote',es:'Producto',de:'Produkt',sv:'Produkt'},
   choose_category:{en:'Choose a category',fi:'Valitse kategoria',es:'Elige una categor\u00EDa',de:'Kategorie w\u00E4hlen',sv:'V\u00E4lj kategori'},
+  search_product:{en:'Search product',fi:'Etsi tuote',es:'Buscar producto',de:'Produkt suchen',sv:'S\u00F6k produkt'},
   uncategorized:{en:'Uncategorized',fi:'Luokittelematon',es:'Sin categor\u00EDa',de:'Nicht kategorisiert',sv:'Okategoriserad'},
   restore_defaults:{en:'Restore default products',fi:'Palauta oletustuotteet',es:'Restaurar productos predeterminados',de:'Standardprodukte wiederherstellen',sv:'\u00C5terst\u00E4ll standardprodukter'},
   restore_defaults_body:{en:'Adds the default sauna menu. Existing products are kept.',fi:'Lis\u00E4\u00E4 oletushinnaston. Nykyiset tuotteet s\u00E4ilyv\u00E4t.',es:'A\u00F1ade el men\u00FA predeterminado. Los productos actuales se mantienen.',de:'F\u00FCgt das Standardmen\u00FC hinzu. Vorhandene Produkte bleiben.',sv:'L\u00E4gger till standardmenyn. Befintliga produkter beh\u00E5lls.'},
@@ -1367,6 +1377,7 @@ function box(l,v,c,click){
 function renderHome(){
   ensureTables();
   var st=getState();
+  var _ht=document.getElementById('home-title'); if(_ht) _ht.textContent=(st.settings.headerText && st.settings.headerText!=='Pub')?st.settings.headerText:'Sauna Mijas';
   var open=st.customers.filter(function(c){ return !c.permanent; });
   document.getElementById('home-list').innerHTML='<div class="cust-grid">'+
     (open.length ? open.map(function(c){
@@ -1382,7 +1393,10 @@ function currentFlag(){
 function updateAllFlags(){ var g=currentFlag(); var els=document.querySelectorAll('.flag-cyc'); for(var i=0;i<els.length;i++) els[i].textContent=g; }
 function ensureFlag(){
   var scr=document.querySelector('.screen.active'); if(!scr) return;
-  var row=scr.querySelector('.top-row'); if(!row) return;
+  var rows=scr.querySelectorAll('.top-row'); if(!rows.length) return;
+  var row=null;
+  for(var r=0;r<rows.length;r++){ if(rows[r].querySelector('.top-actions')){ row=rows[r]; break; } }
+  if(!row) row=rows[0];
   var acts=row.querySelector('.top-actions');
   if(!acts){ acts=document.createElement('div'); acts.className='top-actions'; row.appendChild(acts); }
   var fb=acts.querySelector('.flag-cyc');
@@ -1390,7 +1404,9 @@ function ensureFlag(){
   fb.textContent=currentFlag();
 }
 function applyLang(v){
-  var st=getState(); st.settings.lang=v; saveState(st);
+  var st=getState(); st.settings.lang=v;
+  if(activeCustomerId && document.getElementById('s-cust').classList.contains('active')){ var _c=findCustomer(st,activeCustomerId); if(_c) _c.lang=v; }
+  saveState(st);
   applyAppearance(); applyStaticText();
   try{ renderSetPage(); }catch(e){}
   try{ renderSettings(); }catch(e){}
@@ -1503,7 +1519,7 @@ function askNewCustomer(prefill){
 function addCustomer(id,name,restored){
   var st=getState();
   unhideCustomer(st,id);
-  st.customers.push({id:id,name:name});
+  st.customers.push({id:id,name:name,lang:st.settings.lang});
   if(!saveState(st)) return;
   toast(restored ? t('ts_history_restored').replace('{a}',name) : t('ts_added').replace('{a}',name),'ok');
   runOnboarding(id);
@@ -1602,12 +1618,13 @@ function openTables(gid){
 }
 
 /* ---------- CUSTOMER ---------- */
-var activeCustomerId=null, custTab='add', cart={}, activeCat='__fav__', customSeq=0;
+var activeCustomerId=null, custTab='add', cart={}, activeCat='__fav__', customSeq=0, custProdQuery='';
 
 function openCustomer(id){
   var st=getState(), c=findCustomer(st,id);
   if(!c){ goHome(); return; }
   activeCustomerId=id; cart={}; activeCat=null;
+  if(c.lang && c.lang!==st.settings.lang){ st.settings.lang=c.lang; saveState(st); applyAppearance(); applyStaticText(); }
   setCustTitle(c.name);
   show('s-cust');
   showCustView('menu');
@@ -1632,7 +1649,7 @@ function showCustView(v){
   });
   var bb=document.getElementById('cust-back-btn');
   if(bb) bb.textContent = (v==='menu') ? t('done') : t('back');
-  if(v==='add'){ renderCats('cat-bar'); renderProds('prod-grid'); renderCart(); }
+  if(v==='add'){ custProdQuery=''; var _si=document.getElementById('cust-prod-search'); if(_si){ _si.value=''; _si.placeholder=t('search_product'); } renderCats('cat-bar'); renderProds('prod-grid'); renderCart(); }
   else {
     var cw=document.getElementById('cart-wrap'); if(cw) cw.style.display='none';
     if(v==='hist') renderHistory();
@@ -1736,25 +1753,34 @@ function setAskField(v){
 }
 function toggleAskField(){ setAskField(!editingAsk); }
 /* ask-on-join onboarding (uses each flagged product's own name) */
-var obQueue=[], obIdx=0, obCustId=null;
+var obQueue=[], obIdx=0, obCustId=null, obPicked=[];
 function runOnboarding(custId){
   var st=getState();
   obQueue=st.products.filter(function(p){ return p.ask; });
-  obIdx=0; obCustId=custId;
+  obIdx=0; obCustId=custId; obPicked=[];
   obNext();
 }
 function obNext(){
-  if(obIdx>=obQueue.length){ closeModal('m-onboard'); goHome(); return; }
+  if(obIdx>=obQueue.length){
+    closeModal('m-onboard');
+    if(obPicked.length){
+      var st=getState(), c=findCustomer(st,obCustId);
+      if(c){
+        var items=obPicked.map(function(p){ return {name:pName(p),price:p.price,qty:1}; });
+        var amount=obPicked.reduce(function(a,p){ return a+p.price; },0);
+        pushTx(st,{customerId:c.id,customerName:c.name,type:'debt',amount:amount,items:items});
+        saveState(st);
+      }
+    }
+    goHome();
+    return;
+  }
   var p=obQueue[obIdx];
   document.getElementById('ob-title').textContent=t('add_q').replace('{a}',pName(p)+' ('+f(p.price)+EUR+')');
   openModal('m-onboard');
 }
 function obAnswer(yes){
-  var p=obQueue[obIdx];
-  if(yes && p){
-    var st=getState(), c=findCustomer(st,obCustId);
-    if(c){ pushTx(st,{customerId:c.id,customerName:c.name,type:'debt',amount:p.price,items:[{name:pName(p),price:p.price,qty:1}]}); saveState(st); }
-  }
+  if(yes && obQueue[obIdx]) obPicked.push(obQueue[obIdx]);
   obIdx++; obNext();
 }
 /* category label editor - keeps the internal key stable across languages */
@@ -1815,11 +1841,12 @@ function renderCats(elId){
   var cats=['__fav__'].concat(usedCategories(st));
   document.getElementById(elId).innerHTML=cats.map(function(c){
     var lbl = c==='__fav__' ? '\u2605 '+t('favorites') : esc(catLabel(c));
-    return '<button class="chip '+(activeCat===c?'active':'')+'" onclick="pickCat(\''+encodeURIComponent(c)+'\')">'+lbl+'</button>';
+    return '<button class="cat-big'+(activeCat===c?' active':'')+'" onclick="pickCat(\''+encodeURIComponent(c)+'\')">'+lbl+'</button>';
   }).join('');
 }
 function pickCat(c){
   activeCat=decodeURIComponent(c);
+  custProdQuery=''; var _si=document.getElementById('cust-prod-search'); if(_si) _si.value='';
   var walkin=document.getElementById('s-walkin').classList.contains('active');
   renderCats(walkin?'wi-cat-bar':'cat-bar');
   renderProds(walkin?'wi-prod-grid':'prod-grid');
@@ -1830,22 +1857,24 @@ function renderProds(elId){
     el.innerHTML='<div class="empty-hint" style="grid-column:1/-1;">'+t('no_products')+'<br>'+t('add_in_settings')+'</div>';
     return;
   }
-  if(activeCat===null){
+  var q=(typeof custProdQuery==='string'?custProdQuery:'').trim().toLowerCase();
+  var ps;
+  if(q){ ps=st.products.filter(function(p){ return prodMatches(p,q); }); }
+  else if(activeCat===null){
     el.innerHTML='<div class="empty-hint" style="grid-column:1/-1;">'+t('choose_category')+'</div>';
     return;
   }
-  var ps = activeCat==='__fav__'
-    ? st.products.filter(function(p){ return p.fav; })
-    : st.products.filter(function(p){ return p.cat===activeCat; });
+  else if(activeCat==='__fav__'){ ps=st.products.filter(function(p){ return p.fav; }); }
+  else { ps=st.products.filter(function(p){ return p.cat===activeCat; }); }
   if(!ps.length){
     el.innerHTML='<div class="empty-hint" style="grid-column:1/-1;">'+
-      (activeCat==='__fav__' ? t('no_favorites')+'<br>'+t('star_in_settings') : t('empty_category'))+'</div>';
+      (q ? t('empty_category') : (activeCat==='__fav__' ? t('no_favorites')+'<br>'+t('star_in_settings') : t('empty_category')))+'</div>';
     return;
   }
   el.innerHTML=ps.map(function(p){
-    var q = cart[p.id] ? cart[p.id].qty : 0;
+    var qn = cart[p.id] ? cart[p.id].qty : 0;
     return '<div class="prod-card" onclick="addToCart(\''+p.id+'\')">'+
-      (q?'<div class="prod-qty">'+q+'</div>':'')+
+      (qn?'<div class="prod-qty">'+qn+'</div>':'')+
       (p.fav?'<div class="prod-star">\u2605</div>':'')+
       '<div class="prod-name">'+esc(pName(p))+'</div>'+
       '<div class="prod-price">'+f(p.price)+EUR+'</div></div>';
@@ -1964,7 +1993,7 @@ function toggleDay(d){
 }
 function txLabel(tx){
   var mw=t(tx.method==='card'?'card':'cash').toLowerCase();
-  if(tx.type==='debt') return t('lbl_purchase');
+  if(tx.type==='debt') return (tx.items && tx.items.length) ? tx.items.map(function(i){ return esc(i.name); }).join(', ') : t('lbl_purchase');
   if(tx.type==='writeoff') return t('lbl_writeoff');
   if(tx.type==='credit') return t('lbl_credit').replace('{a}',mw);
   if(tx.type==='recovery') return t('lbl_recovery').replace('{a}',mw);
@@ -3239,11 +3268,21 @@ function renderTopSellers(){
   }
   document.getElementById('prod-report-body').innerHTML=body;
 }
-var dailyExcluded={}, dailyRows=[];
+var dailyExcluded={}, dailyRows=[], dailyDate=null, dailyLang=null;
 function renderProdDaily(){
-  var st=getState(), bd=todayBarDate();
-  dailyRows=productTotals(st.transactions.filter(function(t){ return txBarDate(t)===bd; }));
-  var body='<div class="label" style="margin-top:0.4em;">'+t('daily_report')+' \u00B7 '+bd+'</div>';
+  var st=getState();
+  if(dailyDate===null) dailyDate=todayBarDate();
+  if(dailyLang===null) dailyLang=curLang();
+  dailyRows=productTotals(st.transactions.filter(function(t){ return txBarDate(t)===dailyDate; }));
+  var isToday = dailyDate===todayBarDate();
+  var nav='<div class="row" style="justify-content:space-between;margin-bottom:0.6em;">'+
+    '<button class="qbtn" onclick="stepDaily(-1)">\u2039</button>'+
+    '<div style="flex:1;text-align:center;padding:0 8px;"><input type="date" id="daily-date" value="'+isoDate(new Date(dailyDate))+'" max="'+isoDate(new Date(todayBarDate()))+'" onchange="pickDailyDate(this.value)" style="width:100%;background:var(--bg3);color:var(--gold2);border:1px solid var(--gold);border-radius:8px;padding:8px;font-size:1em;"></div>'+
+    '<button class="qbtn" onclick="stepDaily(1)"'+(isToday?' disabled style="opacity:0.35;"':'')+'>\u203A</button></div>';
+  var langSel='<div class="row" style="justify-content:space-between;margin-bottom:0.7em;"><div style="align-self:center;">'+t('report_language')+'</div>'+
+    '<select id="daily-lang" onchange="dailyLang=this.value" style="background:var(--bg3);color:var(--gold2);border:1px solid var(--gold);border-radius:8px;padding:8px;">'+
+    LANGS.map(function(L){ return '<option value="'+L[0]+'"'+(dailyLang===L[0]?' selected':'')+'>'+L[1]+'</option>'; }).join('')+'</select></div>';
+  var body=nav+langSel;
   if(!dailyRows.length){ body+='<div class="empty-hint">'+t('no_sales_today')+'</div>'; }
   else{
     body+=dailyRows.map(function(r,i){
@@ -3253,23 +3292,57 @@ function renderProdDaily(){
         '<div style="text-align:right;"><div style="font-weight:700;">'+r.qty+' '+t('pcs')+'</div>'+
         '<div class="row-sub" style="color:var(--gold2);">'+f(r.sum)+EUR+'</div></div></div>';
     }).join('');
-    body+='<button class="btn-full" style="margin-top:1em;background:var(--gbg);border-color:var(--green);color:var(--green);" onclick="printDaily()">'+t('print')+'</button>';
+    body+='<button class="btn-full" style="margin-top:1em;background:var(--gbg);border-color:var(--green);color:var(--green);" onclick="printDaily()">'+t('print')+' (PDF)</button>';
   }
   document.getElementById('prod-report-body').innerHTML=body;
 }
+function stepDaily(dir){
+  var st=getState(); var base=new Date(dailyDate); base.setDate(base.getDate()+dir); base.setHours(12,0,0,0);
+  var nd=computeBarDate(base.getTime(), st.settings.dayEnd);
+  if(nd>todayBarDate()) return;
+  dailyDate=nd; renderProdDaily();
+}
+function pickDailyDate(val){
+  if(!val) return; var st=getState(); var d=new Date(val+'T12:00:00');
+  dailyDate=computeBarDate(d.getTime(), st.settings.dayEnd);
+  if(dailyDate>todayBarDate()) dailyDate=todayBarDate();
+  renderProdDaily();
+}
 function toggleDaily(i){ var r=dailyRows[i]; if(!r) return; if(dailyExcluded[r.name]) delete dailyExcluded[r.name]; else dailyExcluded[r.name]=true; renderProdDaily(); }
 function printDaily(){
-  var st=getState(), bd=todayBarDate();
+  var st=getState(), lang=dailyLang||curLang();
   var rows=dailyRows.filter(function(r){ return !dailyExcluded[r.name]; });
-  var gTot=rows.reduce(function(a,r){ return a+r.sum; },0);
-  var gQty=rows.reduce(function(a,r){ return a+r.qty; },0);
-  var title=(st.settings.headerText && st.settings.headerText!=='Pub')?st.settings.headerText:'MijasPub';
-  var html='<h1>'+esc(title)+'</h1><h2>'+t('daily_report')+' \u00B7 '+bd+'</h2>'+
-    '<table><tr><th>'+t('rep_product')+'</th><th>'+t('pcs')+'</th><th>'+t('total')+'</th></tr>'+
-    rows.map(function(r){ return '<tr><td>'+esc(r.name)+'</td><td>'+r.qty+'</td><td>'+f(r.sum)+EUR+'</td></tr>'; }).join('')+
-    '<tr><th>'+t('total')+'</th><th>'+gQty+'</th><th>'+f(gTot)+EUR+'</th></tr></table>';
-  document.getElementById('printarea').innerHTML=html;
-  window.print();
+  var LBL={ title:{fi:'P\u00E4iv\u00E4raportti',en:'Daily report',es:'Informe diario',de:'Tagesbericht',sv:'Dagsrapport'},
+            product:{fi:'Tuote',en:'Product',es:'Producto',de:'Produkt',sv:'Produkt'},
+            pcs:{fi:'kpl',en:'pcs',es:'uds',de:'Stk',sv:'st'},
+            total:{fi:'Yhteens\u00E4',en:'Total',es:'Total',de:'Gesamt',sv:'Totalt'} };
+  function L(k){ return LBL[k][lang]||LBL[k].en; }
+  var cur=st.settings.currency||'\u20AC';
+  function money(n){ return n.toFixed(2)+' '+cur; }
+  var lines=[], y=60;
+  var title=(st.settings.headerText && st.settings.headerText!=='Pub')?st.settings.headerText:'Sauna Mijas';
+  lines.push({text:title,x:50,y:y,size:18,bold:true}); y+=22;
+  lines.push({text:L('title')+' - '+fmtDate(dailyDate),x:50,y:y,size:12,bold:true}); y+=24;
+  lines.push({text:L('product'),x:50,y:y,size:11,bold:true});
+  lines.push({text:L('pcs'),x:340,y:y,size:11,bold:true});
+  lines.push({text:L('total'),x:430,y:y,size:11,bold:true}); y+=16;
+  var gTot=0,gQty=0;
+  rows.forEach(function(r){ if(y>800) return; gTot+=r.sum; gQty+=r.qty;
+    lines.push({text:r.name,x:50,y:y,size:10});
+    lines.push({text:String(r.qty),x:340,y:y,size:10});
+    lines.push({text:money(r.sum),x:430,y:y,size:10}); y+=15; });
+  y+=8;
+  lines.push({text:L('total'),x:50,y:y,size:12,bold:true});
+  lines.push({text:String(gQty),x:340,y:y,size:12,bold:true});
+  lines.push({text:money(gTot),x:430,y:y,size:12,bold:true});
+  var name=L('title')+' '+isoDate(new Date(dailyDate))+'.pdf';
+  headerLogoForPDF(st,function(logo){
+    if(logo){ logo.x=50; logo.y=40; }
+    var blob=new Blob([pdfBytes(buildPDF(lines,logo))],{type:'application/pdf'});
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    toast(t('ts_pdf_created'),'ok');
+  });
 }
 /* Customer list -> tap a name -> that customer's product breakdown for the
    selected month or all time. */
