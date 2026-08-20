@@ -1,5 +1,5 @@
 {
-  "version": "1.04.00",
-  "cache": "mijaspub-v6",
-  "notes": "Batch 3 (monikieliset tuotteet): Tuotteilla ja kategorioilla nimi 5 kielellä (fi/en/es/de/sv), varakieli suomi jos jokin puuttuu. Tuote-editorissa 5 nimikenttää + 'Kysy uudelta asiakkaalta' -rasti. Kategorian kynä avaa 5-kielisen nimieditorin (sisäinen tunniste pysyy, tuotelinkit eivät katkea). Uuden asiakkaan lisäys kysyy jokaisesta rastitetusta tuotteesta 'Lisätaanko: X (hinta)?' ja Kyllä lisää veloituksen (oletuksena Kuljetus saunalle 5 EUR ja Saunominen 12 EUR). Oletushinnasto siemennetty paperiversion mukaan (Oluet 2,5; Hartwall Aquarius Seltzer 3,5; Siideri 4; Energiajuoma 4; Limonadi 2,5; Vesi 1; Makkara 3; Tapas 3; Jaatelo 3; Vuokrapyyhe 2,5; Vuokra-uima-asu 2,5; Kuljetus 5; Saunominen 12). Kaikki muokattavissa editorissa. Korjaus: known-customer-kysely poistettu."
+  "version": "1.04.01",
+  "cache": "mijaspub-v7",
+  "notes": "Korjaus: oletustuotteet eivat ilmestyneet jos aiempi tila esti siemennyksen. Nyt oletushinnasto siemennetaan aina kun tuotelista on tyhja (itsestaan korjautuva), toistoturvallisesti ilman duplikaatteja. Lisaksi Kategoriat-sivulle 'Palauta oletustuotteet' -nappi jolla saa oletukset takaisin milloin vain (ei poista olemassa olevia)."
 }

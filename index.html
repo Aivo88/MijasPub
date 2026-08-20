@@ -646,7 +646,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.04.00';
+var APP_VERSION = '1.04.01';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -666,6 +666,8 @@ var LANG={
   add_q:{en:'Add: {a}?',fi:'Lis\u00E4t\u00E4\u00E4nk\u00F6: {a}?',es:'\u00BFA\u00F1adir: {a}?',de:'Hinzuf\u00FCgen: {a}?',sv:'L\u00E4gg till: {a}?'},
   ask_new_customer:{en:'Ask new customer',fi:'Kysy uudelta asiakkaalta',es:'Preguntar al nuevo cliente',de:'Neuen Kunden fragen',sv:'Fr\u00E5ga ny kund'},
   uncategorized:{en:'Uncategorized',fi:'Luokittelematon',es:'Sin categor\u00EDa',de:'Nicht kategorisiert',sv:'Okategoriserad'},
+  restore_defaults:{en:'Restore default products',fi:'Palauta oletustuotteet',es:'Restaurar productos predeterminados',de:'Standardprodukte wiederherstellen',sv:'\u00C5terst\u00E4ll standardprodukter'},
+  restore_defaults_body:{en:'Adds the default sauna menu. Existing products are kept.',fi:'Lis\u00E4\u00E4 oletushinnaston. Nykyiset tuotteet s\u00E4ilyv\u00E4t.',es:'A\u00F1ade el men\u00FA predeterminado. Los productos actuales se mantienen.',de:'F\u00FCgt das Standardmen\u00FC hinzu. Vorhandene Produkte bleiben.',sv:'L\u00E4gger till standardmenyn. Befintliga produkter beh\u00E5lls.'},
   cashier:{en:'Cashier',fi:'Kassanhoitaja',es:'Cajero',de:'Kasse',sv:'Kass\u00F6r'},
   start_shopping:{en:'Start shopping',fi:'Aloita shoppailu',es:'Empezar a comprar',de:'Einkauf starten',sv:'B\u00F6rja handla'},
   done:{en:'Done',fi:'Valmis',es:'Listo',de:'Fertig',sv:'Klar'},
@@ -1754,7 +1756,7 @@ function seedDefaults(st){
     'Juomat':{fi:'Juomat',en:'Drinks',es:'Bebidas',de:'Getr\u00E4nke',sv:'Drycker'}
   };
   Object.keys(cats).forEach(function(k){ if(st.categories.indexOf(k)===-1) st.categories.push(k); st.catNames[k]=cats[k]; });
-  function P(cat,price,fav,ask,names){ st.products.push({id:uid('p'),names:names,name:names.fi,price:price,cat:cat,fav:!!fav,ask:!!ask}); }
+  function P(cat,price,fav,ask,names){ if(st.products.some(function(x){ return x.names && x.names.fi===names.fi; })) return; st.products.push({id:uid('p'),names:names,name:names.fi,price:price,cat:cat,fav:!!fav,ask:!!ask}); }
   P('Juomat',2.5,true,false,{fi:'Olut',en:'Beer',es:'Cerveza',de:'Bier',sv:'\u00D6l'});
   P('Juomat',3.5,false,false,{fi:'Hartwall Aquarius Seltzer',en:'Hartwall Aquarius Seltzer',es:'Hartwall Aquarius Seltzer',de:'Hartwall Aquarius Seltzer',sv:'Hartwall Aquarius Seltzer'});
   P('Juomat',4,false,false,{fi:'Siideri',en:'Cider',es:'Sidra',de:'Cider',sv:'Cider'});
@@ -1769,6 +1771,12 @@ function seedDefaults(st){
   P('Palvelut',5,false,true,{fi:'Kuljetus saunalle',en:'Transport to sauna',es:'Transporte a la sauna',de:'Transport zur Sauna',sv:'Transport till bastun'});
   P('Palvelut',12,false,true,{fi:'Saunominen',en:'Sauna session',es:'Sesi\u00F3n de sauna',de:'Saunagang',sv:'Bastubad'});
   st._seeded=true;
+}
+function restoreDefaults(){
+  showConfirm(t('restore_defaults'), t('restore_defaults_body'), function(){
+    var st=getState(); seedDefaults(st);
+    if(saveState(st)){ openCategories(); toast(t('ts_saved'),'ok'); }
+  }, t('restore_defaults'), 'background:var(--gbg);border-color:var(--green);color:var(--green);margin-bottom:0.6em;');
 }
 /* ---------- CATEGORY BAR + PRODUCT GRID ---------- */
 function usedCategories(st){
@@ -2340,6 +2348,7 @@ function openCategories(){
       '</div>';
   }).join('')+
   '</div><div style="margin-top:1em;"><button class="btn-full" onclick="addCategory()">'+t('new_category')+'</button></div>'+
+  '<div style="margin-top:0.6em;"><button class="btn-full" style="background:var(--bg3);border-color:var(--gold);color:var(--gold2);" onclick="restoreDefaults()">'+t('restore_defaults')+'</button></div>'+
   quickAmountsSection(st);
   renderCatSearch();
   show('s-cats');
@@ -4069,7 +4078,7 @@ function applyUpdate(){
 
 /* ---------- INIT ---------- */
 applyAppearance();
-(function(){ var st=getState(); if(!st._seeded && (!st.products || !st.products.length)){ seedDefaults(st); saveState(st); } })();
+(function(){ var st=getState(); if(!st.products || !st.products.length){ seedDefaults(st); saveState(st); } })();
 applyStaticText();
 renderHome();
 ensureFlag();
