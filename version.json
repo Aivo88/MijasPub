@@ -1,5 +1,5 @@
 {
-  "version": "1.02.00",
-  "cache": "mijaspub-v3",
-  "notes": "Batch 1: (1) Yksi kielilippu joka kiertää kielet napautuksella ja seuraa joka sivulle; 60 s idle palauttaa oletuskieleen (suomi) ja kioskin kotiin; kieli poistettu Asetusten Valuutta-osiosta. (2) Asiakassivulla nimi ja saldo suurella fontilla. (3) Kassanhoitajan sivu: asiakkaat aakkosjärjestyksessä omilla riveillä, nimi + summa + Maksettu; kuittaus palaa kassasivulle. (4) Admin-takaovi: lisää asiakas nimellä 'Admin' -> pääsee kassaan ilman PINiä (esim. PINin vaihtoon). Korjaukset: Tables/ryhmät oletuksena pois (kytkettävissä ryhmähallinnasta); PIN-tuplauskosketus ei enää näytä väärää 'väärä PIN' -ilmoitusta."
+  "version": "1.03.00",
+  "cache": "mijaspub-v4",
+  "notes": "Batch 2: (1) Oma summa -nappi poistettu asiakkailta. (2) Kassanhoitajan Historia- ja Asetukset-sivujen Takaisin vie nyt kassanhoitajan sivulle (ei kioskiin). (3) Yläpalkin napit pysyvät samassa paikassa joka kielellä (napit kiinnitetty oikeaan, otsikko kutistuu). (4) Groups/ryhmät poistettu käytöstä kokonaan."
 }
