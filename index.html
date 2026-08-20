@@ -646,7 +646,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.04.02';
+var APP_VERSION = '1.04.03';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -1388,9 +1388,17 @@ function cycleLang(){
 }
 function renderActive(){
   var scr=document.querySelector('.screen.active'); var id=scr?scr.id:'';
-  if(id==='s-home') renderHome();
-  else if(id==='s-cashier') renderCashierHome();
-  else if(id==='s-cust'){ renderCustBalance(); if(custView==='add'){ renderCats('cat-bar'); renderProds('prod-grid'); } else if(custView==='hist') renderHistory(); }
+  function T(fn){ try{ fn(); }catch(e){} }
+  if(id==='s-home') T(renderHome);
+  else if(id==='s-cashier') T(renderCashierHome);
+  else if(id==='s-cust'){ T(renderCustBalance); if(custView==='add'){ T(function(){renderCats('cat-bar');}); T(function(){renderProds('prod-grid');}); } else if(custView==='hist') T(renderHistory); }
+  else if(id==='s-set') T(renderSettings);
+  else if(id==='s-setpage') T(renderSetPage);
+  else if(id==='s-cats') T(openCategories);
+  else if(id==='s-catprod') T(renderCatProducts);
+  else if(id==='s-custman') T(function(){ if(typeof renderCustomersManage==='function') renderCustomersManage(); });
+  else if(id==='s-rep') T(function(){ if(typeof setRepTab==='function') setRepTab(typeof repTab!=='undefined'&&repTab?repTab:'day'); });
+  else if(id==='s-prod') T(function(){ if(typeof setProdTab==='function') setProdTab(typeof prodTab!=='undefined'&&prodTab?prodTab:'top'); });
 }
 function openCashierHome(){ show('s-cashier'); renderCashierHome(); }
 function renderCashierHome(){

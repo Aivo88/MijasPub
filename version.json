@@ -1,5 +1,5 @@
 {
-  "version": "1.04.02",
-  "cache": "mijaspub-v8",
-  "notes": "Kielilipun onclick sidottu suoraan funktioksi (aiemmin merkkijonona setAttributella) - varmempi kaikilla laiteselaimilla. Sisaltaa myos 1.04.01 korjaukset: oletustuotteet siemennetaan aina kun lista on tyhja + 'Palauta oletustuotteet' -nappi."
+  "version": "1.04.03",
+  "cache": "mijaspub-v9",
+  "notes": "Korjaus: kielilippu ei paivittanyt kategorialista-sivua (eika kategorian tuotteet-, asiakashallinta- tai raporttisivuja) - tekstit jaivat vanhalle kielelle kunnes navigoi pois ja takaisin. Nyt kielenvaihto renderoi aina aktiivisen sivun, oli se mika tahansa."
 }
