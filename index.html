@@ -140,6 +140,12 @@ input:focus,select:focus{border-color:var(--gold);}
   .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
   .pin-key{min-height:60px;font-size:1.4em;font-weight:700;background:var(--bg3);border:1.5px solid var(--gold);border-radius:10px;color:var(--gold2);cursor:pointer;}
   .pin-key:active{opacity:0.7;}
+  #cat-bar .chip{font-size:1.15em;padding:0.75em 1.15em;min-height:54px;}
+  #prod-grid .prod-card{min-height:118px;}
+  #prod-grid .prod-name{font-size:1.18em;}
+  #prod-grid .prod-price{font-size:1.1em;}
+  #home-list .cust-name{font-size:1.55em;}
+  #home-list .cust-item-tap{min-height:80px;display:flex;align-items:center;justify-content:center;}
 </style>
 </head>
 <body>
@@ -308,7 +314,7 @@ input:focus,select:focus{border-color:var(--gold);}
     <div class="top-row"><div class="screen-title" data-t="products">Products</div></div>
     <div class="tabs">
       <button class="tab active" id="ptab-top" onclick="setProdTab('top')" data-t="top_sellers">Top sellers</button>
-      <button class="tab" id="ptab-cust" onclick="setProdTab('cust')" data-t="customers">Customers</button>
+      <button class="tab" id="ptab-day" onclick="setProdTab('day')" data-t="daily_report">Daily</button>
     </div>
   </div>
   <div class="body-scroll" id="prod-report-body"></div>
@@ -323,7 +329,6 @@ input:focus,select:focus{border-color:var(--gold);}
     <div class="tabs">
       <button class="tab active" id="rtab-day" onclick="setRepTab('day')" data-t="today">Today</button>
       <button class="tab" id="rtab-month" onclick="setRepTab('month')" data-t="month">Month</button>
-      <button class="tab" id="rtab-cust" onclick="setRepTab('cust')" data-t="customers">Customers</button>
       <button class="tab" id="rtab-raw" onclick="setRepTab('raw')" data-t="raw">Raw</button>
     </div>
   </div>
@@ -601,6 +606,7 @@ input:focus,select:focus{border-color:var(--gold);}
 <div class="modal-bg" id="m-text">
   <div class="modal">
     <div class="modal-title" id="mt-title"></div>
+    <div id="mt-flag-row" style="display:none;text-align:center;margin-bottom:0.6em;"><button class="flag-btn flag-cyc" type="button" onclick="cycleLang()"></button></div>
     <div class="field"><input type="text" id="mt-input" autocomplete="off"></div>
     <button class="btn-full" style="background:var(--gbg);border-color:var(--green);color:var(--green);margin-bottom:0.6em;" id="mt-ok">OK</button>
     <button class="btn-modal-cancel" onclick="closeModal('m-text')" data-t="cancel">Cancel</button>
@@ -646,7 +652,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.04.03';
+var APP_VERSION = '1.05.00';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -665,6 +671,12 @@ var LANG={
   no:{en:'No',fi:'Ei',es:'No',de:'Nein',sv:'Nej'},
   add_q:{en:'Add: {a}?',fi:'Lis\u00E4t\u00E4\u00E4nk\u00F6: {a}?',es:'\u00BFA\u00F1adir: {a}?',de:'Hinzuf\u00FCgen: {a}?',sv:'L\u00E4gg till: {a}?'},
   ask_new_customer:{en:'Ask new customer',fi:'Kysy uudelta asiakkaalta',es:'Preguntar al nuevo cliente',de:'Neuen Kunden fragen',sv:'Fr\u00E5ga ny kund'},
+  daily_report:{en:'Daily report',fi:'P\u00E4iv\u00E4raportti',es:'Informe diario',de:'Tagesbericht',sv:'Dagsrapport'},
+  no_sales_today:{en:'No sales today',fi:'Ei myyntej\u00E4 t\u00E4n\u00E4\u00E4n',es:'Sin ventas hoy',de:'Heute keine Verk\u00E4ufe',sv:'Inga f\u00F6rs\u00E4ljningar idag'},
+  pcs:{en:'pcs',fi:'kpl',es:'uds',de:'Stk',sv:'st'},
+  print:{en:'Print',fi:'Tulosta',es:'Imprimir',de:'Drucken',sv:'Skriv ut'},
+  rep_product:{en:'Product',fi:'Tuote',es:'Producto',de:'Produkt',sv:'Produkt'},
+  choose_category:{en:'Choose a category',fi:'Valitse kategoria',es:'Elige una categor\u00EDa',de:'Kategorie w\u00E4hlen',sv:'V\u00E4lj kategori'},
   uncategorized:{en:'Uncategorized',fi:'Luokittelematon',es:'Sin categor\u00EDa',de:'Nicht kategorisiert',sv:'Okategoriserad'},
   restore_defaults:{en:'Restore default products',fi:'Palauta oletustuotteet',es:'Restaurar productos predeterminados',de:'Standardprodukte wiederherstellen',sv:'\u00C5terst\u00E4ll standardprodukter'},
   restore_defaults_body:{en:'Adds the default sauna menu. Existing products are kept.',fi:'Lis\u00E4\u00E4 oletushinnaston. Nykyiset tuotteet s\u00E4ilyv\u00E4t.',es:'A\u00F1ade el men\u00FA predeterminado. Los productos actuales se mantienen.',de:'F\u00FCgt das Standardmen\u00FC hinzu. Vorhandene Produkte bleiben.',sv:'L\u00E4gger till standardmenyn. Befintliga produkter beh\u00E5lls.'},
@@ -1206,12 +1218,15 @@ function showConfirm(title,body,onOk,okLabel,okStyle){
   btn.onclick=function(){ closeModal('m-confirm'); onOk(); };
   openModal('m-confirm');
 }
-function askText(title,val,onOk){
+function askText(title,val,onOk,showFlag,titleKey){
   document.getElementById('mt-title').textContent=title;
+  window._mtTitleKey = titleKey||null;
+  var fr=document.getElementById('mt-flag-row');
+  if(fr){ fr.style.display = showFlag?'':'none'; if(showFlag) updateAllFlags(); }
   var inp=document.getElementById('mt-input'); inp.value=val||'';
   document.getElementById('mt-ok').onclick=function(){
     var v=inp.value.trim(); if(!v) return;
-    closeModal('m-text'); onOk(v);
+    window._mtTitleKey=null; closeModal('m-text'); onOk(v);
   };
   openModal('m-text');
   setTimeout(function(){ inp.focus(); },100);
@@ -1364,6 +1379,7 @@ function currentFlag(){
   var F={en:'\uD83C\uDDEC\uD83C\uDDE7',fi:'\uD83C\uDDEB\uD83C\uDDEE',es:'\uD83C\uDDEA\uD83C\uDDF8',de:'\uD83C\uDDE9\uD83C\uDDEA',sv:'\uD83C\uDDF8\uD83C\uDDEA'};
   return F[cur]||F.fi;
 }
+function updateAllFlags(){ var g=currentFlag(); var els=document.querySelectorAll('.flag-cyc'); for(var i=0;i<els.length;i++) els[i].textContent=g; }
 function ensureFlag(){
   var scr=document.querySelector('.screen.active'); if(!scr) return;
   var row=scr.querySelector('.top-row'); if(!row) return;
@@ -1378,7 +1394,8 @@ function applyLang(v){
   applyAppearance(); applyStaticText();
   try{ renderSetPage(); }catch(e){}
   try{ renderSettings(); }catch(e){}
-  ensureFlag(); renderActive();
+  ensureFlag(); updateAllFlags(); renderActive();
+  if(window._mtTitleKey && document.getElementById('m-text').classList.contains('open')){ document.getElementById('mt-title').textContent=t(window._mtTitleKey); }
 }
 function cycleLang(){
   var st=getState(), order=LANGS.map(function(L){ return L[0]; });
@@ -1481,7 +1498,7 @@ function askNewCustomer(prefill){
       }
     }
     addCustomer(uid('c'),name,false);
-  });
+  },true,'new_customer_prompt');
 }
 function addCustomer(id,name,restored){
   var st=getState();
@@ -1590,7 +1607,7 @@ var activeCustomerId=null, custTab='add', cart={}, activeCat='__fav__', customSe
 function openCustomer(id){
   var st=getState(), c=findCustomer(st,id);
   if(!c){ goHome(); return; }
-  activeCustomerId=id; cart={}; activeCat='__fav__';
+  activeCustomerId=id; cart={}; activeCat=null;
   setCustTitle(c.name);
   show('s-cust');
   showCustView('menu');
@@ -1811,6 +1828,10 @@ function renderProds(elId){
   var st=getState(), el=document.getElementById(elId);
   if(!st.products.length){
     el.innerHTML='<div class="empty-hint" style="grid-column:1/-1;">'+t('no_products')+'<br>'+t('add_in_settings')+'</div>';
+    return;
+  }
+  if(activeCat===null){
+    el.innerHTML='<div class="empty-hint" style="grid-column:1/-1;">'+t('choose_category')+'</div>';
     return;
   }
   var ps = activeCat==='__fav__'
@@ -2356,8 +2377,7 @@ function openCategories(){
       '</div>';
   }).join('')+
   '</div><div style="margin-top:1em;"><button class="btn-full" onclick="addCategory()">'+t('new_category')+'</button></div>'+
-  '<div style="margin-top:0.6em;"><button class="btn-full" style="background:var(--bg3);border-color:var(--gold);color:var(--gold2);" onclick="restoreDefaults()">'+t('restore_defaults')+'</button></div>'+
-  quickAmountsSection(st);
+  '<div style="margin-top:0.6em;"><button class="btn-full" style="background:var(--bg3);border-color:var(--gold);color:var(--gold2);" onclick="restoreDefaults()">'+t('restore_defaults')+'</button></div>';
   renderCatSearch();
   show('s-cats');
 }
@@ -3153,8 +3173,8 @@ var prodTab='top', prodMonth=null; // prodMonth null = All time
 function openProducts(){ prodCustId=null; show('s-prod'); setProdTab(prodTab||'top'); }
 function setProdTab(t){
   prodTab=t;
-  ['top','cust'].forEach(function(k){ document.getElementById('ptab-'+k).classList.toggle('active',k===t); });
-  if(t==='top') renderTopSellers(); else renderProdCustomers();
+  ['top','day'].forEach(function(k){ document.getElementById('ptab-'+k).classList.toggle('active',k===t); });
+  if(t==='top') renderTopSellers(); else renderProdDaily();
 }
 /* A month stepper shared by both product tabs; null means the whole history. */
 function prodMonthBar(onchange){
@@ -3219,6 +3239,38 @@ function renderTopSellers(){
   }
   document.getElementById('prod-report-body').innerHTML=body;
 }
+var dailyExcluded={}, dailyRows=[];
+function renderProdDaily(){
+  var st=getState(), bd=todayBarDate();
+  dailyRows=productTotals(st.transactions.filter(function(t){ return txBarDate(t)===bd; }));
+  var body='<div class="label" style="margin-top:0.4em;">'+t('daily_report')+' \u00B7 '+bd+'</div>';
+  if(!dailyRows.length){ body+='<div class="empty-hint">'+t('no_sales_today')+'</div>'; }
+  else{
+    body+=dailyRows.map(function(r,i){
+      var on=!dailyExcluded[r.name];
+      return '<div class="row"><button class="row-main" style="background:none;border:none;text-align:left;cursor:pointer;color:inherit;" onclick="toggleDaily('+i+')">'+
+        '<div style="font-weight:600;">'+(on?'\u2611':'\u2610')+' '+esc(r.name)+'</div></button>'+
+        '<div style="text-align:right;"><div style="font-weight:700;">'+r.qty+' '+t('pcs')+'</div>'+
+        '<div class="row-sub" style="color:var(--gold2);">'+f(r.sum)+EUR+'</div></div></div>';
+    }).join('');
+    body+='<button class="btn-full" style="margin-top:1em;background:var(--gbg);border-color:var(--green);color:var(--green);" onclick="printDaily()">'+t('print')+'</button>';
+  }
+  document.getElementById('prod-report-body').innerHTML=body;
+}
+function toggleDaily(i){ var r=dailyRows[i]; if(!r) return; if(dailyExcluded[r.name]) delete dailyExcluded[r.name]; else dailyExcluded[r.name]=true; renderProdDaily(); }
+function printDaily(){
+  var st=getState(), bd=todayBarDate();
+  var rows=dailyRows.filter(function(r){ return !dailyExcluded[r.name]; });
+  var gTot=rows.reduce(function(a,r){ return a+r.sum; },0);
+  var gQty=rows.reduce(function(a,r){ return a+r.qty; },0);
+  var title=(st.settings.headerText && st.settings.headerText!=='Pub')?st.settings.headerText:'MijasPub';
+  var html='<h1>'+esc(title)+'</h1><h2>'+t('daily_report')+' \u00B7 '+bd+'</h2>'+
+    '<table><tr><th>'+t('rep_product')+'</th><th>'+t('pcs')+'</th><th>'+t('total')+'</th></tr>'+
+    rows.map(function(r){ return '<tr><td>'+esc(r.name)+'</td><td>'+r.qty+'</td><td>'+f(r.sum)+EUR+'</td></tr>'; }).join('')+
+    '<tr><th>'+t('total')+'</th><th>'+gQty+'</th><th>'+f(gTot)+EUR+'</th></tr></table>';
+  document.getElementById('printarea').innerHTML=html;
+  window.print();
+}
 /* Customer list -> tap a name -> that customer's product breakdown for the
    selected month or all time. */
 var prodCustId=null;
@@ -3268,12 +3320,11 @@ function backToReports(){
 }
 function setRepTab(t){
   repTab=t;
-  ['day','month','cust','raw'].forEach(function(k){
+  ['day','month','raw'].forEach(function(k){
     document.getElementById('rtab-'+k).classList.toggle('active',k===t);
   });
   if(t==='day') renderDay();
   else if(t==='month') renderMonth();
-  else if(t==='cust') renderCustomersTab();
   else renderRaw();
 }
 
@@ -3694,13 +3745,9 @@ function menuRow(label,sub,handler){
 function renderSettings(){
   var st=getState(), s=st.settings;
   document.getElementById('set-body').innerHTML=
-    menuRow(t('m_header'), s.headerImage?t('m_header_img'):((s.headerText&&s.headerText!=='Pub')?s.headerText:t('m_header_logo')), "openSetPage('header')")+
-    menuRow(t('m_appearance'),t('m_textsize')+' '+Math.round(s.fontScale*100)+'% \u00B7 '+s.cols+' '+t('m_cards_per_row'), "openSetPage('look')")+
     menuRow(t('m_barday'),t('m_ends_at')+' '+pad2(s.dayEnd)+':00', "openSetPage('day')")+
-    menuRow(t('currency'), s.currency, "openSetPage('region')")+
     menuRow(t('change_pin'), '\u2022\u2022\u2022\u2022', 'changePinFlow()')+
     menuRow(t('m_cats_products'), st.products.length+' '+(st.products.length===1?t('m_product'):t('m_products')), 'openCategories()')+
-    menuRow(t('customers'),t('m_customers_row'), 'openCustomersManage()')+
     menuRow(t('m_cashflow'),t('m_cashflow_sub'), "openSetPage('cash')")+
     menuRow(t('m_updates'),t('m_version')+' '+APP_VERSION, "openSetPage('upd')")+
     menuRow(t('m_data'),t('m_data_sub'), "openSetPage('data')");

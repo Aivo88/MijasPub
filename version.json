@@ -1,5 +1,5 @@
 {
-  "version": "1.04.03",
-  "cache": "mijaspub-v9",
-  "notes": "Korjaus: kielilippu ei paivittanyt kategorialista-sivua (eika kategorian tuotteet-, asiakashallinta- tai raporttisivuja) - tekstit jaivat vanhalle kielelle kunnes navigoi pois ja takaisin. Nyt kielenvaihto renderoi aina aktiivisen sivun, oli se mika tahansa."
+  "version": "1.05.00",
+  "cache": "mijaspub-v10",
+  "notes": "Batch 4: (1) Oma summa -osio poistettu kategoriasivulta. (2) Kassanhoitajan raporteista poistettu asiakas-valilehdet (Raha ja Tuotteet); Tuotteet-raporttiin lisatty Paiva-valilehti: paivan myynnit tuotteittain, tuotteet valittavissa (rasti), ja Tulosta-nappi tulostaa paivaraportin. (3) Uusi asiakas -ikkunaan lisatty kielilippu (vaihtaa kielen ja kysymystekstin). (4) Asiakkaan shoppailussa tuotteet ilmestyvat vasta kun kategoria on valittu; kategoria- ja tuotenapit isommat. (5) Asiakkaiden niminapit kotisivulla isommat. (6) Asetuksista poistettu Otsikko, Ulkoasu, Valuutta ja Asiakkaat."
 }
