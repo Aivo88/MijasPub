@@ -29,7 +29,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;background:none;borde
 html{height:-webkit-fill-available;}
 body{height:100%;height:-webkit-fill-available;background:var(--bg);color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;overflow:hidden;font-size:16px;}
-.screen{display:none;flex-direction:column;height:100%;height:-webkit-fill-available;width:100%;position:absolute;top:0;left:0;background:var(--bg);}
+.screen{display:none;flex-direction:column;height:100%;height:-webkit-fill-available;width:100%;position:absolute;top:0;left:0;background:linear-gradient(rgba(11,18,32,0.5),rgba(11,18,32,0.6)), url('./bg.jpg') center/cover no-repeat;}
 .screen.active{display:flex;}
 
 .top-bar{padding:calc(0.9em + var(--safe-top)) 1.14em 0.8em;flex-shrink:0;background:var(--bg2);border-bottom:2px solid var(--border2);}
@@ -153,7 +153,6 @@ input:focus,select:focus{border-color:var(--gold);}
   #prod-grid .prod-card{min-height:132px;}
   #prod-grid .prod-name{font-size:1.32em;}
   #prod-grid .prod-price{font-size:1.15em;}
-  #s-home{background:linear-gradient(rgba(11,18,32,0.55) 0, rgba(11,18,32,0) 20%, rgba(11,18,32,0) 100%), url('./bg.jpg') center/cover no-repeat;}
   #s-home #home-title{text-shadow:0 1px 4px rgba(0,0,0,0.7);}
 </style>
 </head>
@@ -626,6 +625,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <div class="modal-bg" id="m-onboard">
   <div class="modal">
+    <div style="text-align:center;margin-bottom:0.5em;"><button class="flag-btn flag-cyc" type="button" onclick="cycleLang()"></button></div>
     <div class="modal-title" id="ob-title"></div>
     <div id="ob-price" style="text-align:center;font-size:1.9em;font-weight:800;color:var(--gold2);margin:8px 0 2px;"></div>
     <div class="btn-row" style="margin-top:1em;">
@@ -664,7 +664,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.08.00';
+var APP_VERSION = '1.09.00';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -1426,12 +1426,14 @@ function ensureFlag(){
 function applyLang(v){
   var st=getState(); st.settings.lang=v;
   if(activeCustomerId && document.getElementById('s-cust').classList.contains('active')){ var _c=findCustomer(st,activeCustomerId); if(_c) _c.lang=v; }
+  if(obCustId && document.getElementById('m-onboard').classList.contains('open')){ var _oc=findCustomer(st,obCustId); if(_oc) _oc.lang=v; }
   saveState(st);
   applyAppearance(); applyStaticText();
   try{ renderSetPage(); }catch(e){}
   try{ renderSettings(); }catch(e){}
   ensureFlag(); updateAllFlags(); renderActive();
   if(window._mtTitleKey && document.getElementById('m-text').classList.contains('open')){ document.getElementById('mt-title').textContent=t(window._mtTitleKey); }
+  if(document.getElementById('m-onboard').classList.contains('open')) obRefresh();
 }
 function cycleLang(){
   var st=getState(), order=LANGS.map(function(L){ return L[0]; });
@@ -1819,10 +1821,18 @@ function obNext(){
   document.getElementById('ob-title').textContent=t('add_q').replace('{a}',pName(p));
   document.getElementById('ob-price').textContent=f(p.price)+EUR;
   openModal('m-onboard');
+  updateAllFlags();
 }
 function obAnswer(yes){
   if(yes && obQueue[obIdx]) obPicked.push(obQueue[obIdx]);
   obIdx++; obNext();
+}
+function obRefresh(){
+  if(obIdx>=0 && obIdx<obQueue.length){
+    var p=obQueue[obIdx];
+    var e1=document.getElementById('ob-title'); if(e1) e1.textContent=t('add_q').replace('{a}',pName(p));
+    var e2=document.getElementById('ob-price'); if(e2) e2.textContent=f(p.price)+EUR;
+  }
 }
 /* category label editor - keeps the internal key stable across languages */
 var editingCatKey=null;

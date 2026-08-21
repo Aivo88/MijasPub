@@ -1,5 +1,5 @@
 {
-  "version": "1.08.00",
-  "cache": "mijaspub-v13",
-  "notes": "Batch 7: (1) Historian tuotenimet seuraavat lippua ja saman tuotteen eri kieliset (esim. es+fi Saunominen/Sesion de sauna) yhdistyvat samaksi riviksi (vanhat tapahtumat korjataan automaattisesti). (2) Kotisivun taustakuva selkeampi, navy-verho pois (vain kevyt tummennus ylareunassa otsikon luettavuudelle). (3) Oletustuote Limonadi -> Limpparit (Soft drinks/Refrescos). (4) Rahahistorian Bill settled / Written off / Split payment kaantyvat nyt oikealle kielelle. (5) Asetuksiin Palautusajastin: liukusaadin 30 s - 5 min + ruutu jolla automaattipaluun voi kytkea kokonaan pois."
+  "version": "1.09.00",
+  "cache": "mijaspub-v14",
+  "notes": "Batch 8: (1) Kielilippu nyt myos onboarding-kysymyksissa - asiakas voi vaihtaa kielta viela lisakysymysten aikana, ja kysymys + hinta paivittyvat, ja valinta tallentuu asiakkaalle. (2) Sauna Mijas -taustakuva nyt kaikilla sivuilla (kotisivu, asiakas, kassanhoitaja, historia, asetukset) sisaltoalueella; ylapalkki ja alapalkki pysyvat navyina luettavuuden vuoksi."
 }
