@@ -138,7 +138,7 @@ input:focus,select:focus{border-color:var(--gold);}
   .flag-btn.active{opacity:1;transform:scale(1.15);}
   .flag-cyc{opacity:1;}
   .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
-  .pin-key{min-height:60px;font-size:1.4em;font-weight:700;background:var(--bg3);border:1.5px solid var(--gold);border-radius:10px;color:var(--gold2);cursor:pointer;}
+  .pin-key{min-height:64px;font-size:1.5em;font-weight:700;background:var(--bg3);border:1.5px solid var(--gold);border-radius:10px;color:var(--gold2);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
   .pin-key:active{opacity:0.7;}
   #cat-bar .chip{font-size:1.15em;padding:0.75em 1.15em;min-height:54px;}
   #prod-grid .prod-card{min-height:118px;}
@@ -146,8 +146,8 @@ input:focus,select:focus{border-color:var(--gold);}
   #prod-grid .prod-price{font-size:1.1em;}
   #hdr-slot{display:none;}
   #home-title{text-align:center;}
-  #home-list .cust-name{font-size:2.2em;text-align:center;}
-  #home-list .cust-item-tap{min-height:112px;display:flex;align-items:center;justify-content:center;}
+  #home-list .cust-name{font-size:2.9em;text-align:center;line-height:1.1;}
+  #home-list .cust-item-tap{min-height:132px;display:flex;align-items:center;justify-content:center;padding:0.4em;}
   #cust-title{font-size:2.9em !important;}
   #cust-balance{font-size:2.2em !important;}
   #pane-menu .btn-full{min-height:104px !important;font-size:1.55em !important;}
@@ -673,7 +673,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.10.00';
+var APP_VERSION = '1.10.01';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';

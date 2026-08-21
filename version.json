@@ -1,5 +1,5 @@
 {
-  "version": "1.10.00",
-  "cache": "mijaspub-v15",
-  "notes": "Batch 9: (1) Tuoteraportti nyt paiva/kuukausi/koko aika -valinnalla, kaikki tulostettavissa PDF:na. (2) Vie kirjanpitajalle -sivun napit (ja esikatselu) seuraavat nyt lippua heti. (3) Kotisivun pieni kuvake pois, Sauna Mijas -teksti keskelle. (4) Asiakkaiden niminapit paljon isommat, ja asiakkaan oma ruutu (nimi, saldo, napit) reilusti isommat. (5) Asiakkaan historiassa kynan painaminen kysyy nyt PIN-koodin (vain kassanhoitaja voi poistaa); korjattu vahvistusdialogin englanninkielinen Cancel-nappi kaikkialla. (6) Kassanhoitajan kotisivun napit ja fontit isommat."
+  "version": "1.10.01",
+  "cache": "mijaspub-v16",
+  "notes": "Hienosaato: (1) Asiakkaiden nimet niminappien sisalla viela isommat. (2) PIN-koodin numerot keskitetty nappien keskelle."
 }
