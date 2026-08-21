@@ -1,5 +1,5 @@
 {
-  "version": "1.07.00",
-  "cache": "mijaspub-v12",
-  "notes": "Batch 6: (1) manifest.json luotu (Sauna Mijas, PWA-ikonit). (2) Asiakkaan kieli palautuu oletuskieleen kun palataan kotisivulle (asiakkaan oma kieli silti muistissa). (3) Nimi jo kaytossa -ilmoituksen syy nyt oikealla kielella. (4) Tuotehaun placeholder seuraa kielta + korjattu suurennuslasi-kuvake (nayti aiemmin koodina). (5) Sauna Mijas -taustakuva kotisivulle (tumma navy-verho paalla). (6) Onboarding-kysymyksessa hinta omalla rivillaan isolla nimen alla."
+  "version": "1.08.00",
+  "cache": "mijaspub-v13",
+  "notes": "Batch 7: (1) Historian tuotenimet seuraavat lippua ja saman tuotteen eri kieliset (esim. es+fi Saunominen/Sesion de sauna) yhdistyvat samaksi riviksi (vanhat tapahtumat korjataan automaattisesti). (2) Kotisivun taustakuva selkeampi, navy-verho pois (vain kevyt tummennus ylareunassa otsikon luettavuudelle). (3) Oletustuote Limonadi -> Limpparit (Soft drinks/Refrescos). (4) Rahahistorian Bill settled / Written off / Split payment kaantyvat nyt oikealle kielelle. (5) Asetuksiin Palautusajastin: liukusaadin 30 s - 5 min + ruutu jolla automaattipaluun voi kytkea kokonaan pois."
 }

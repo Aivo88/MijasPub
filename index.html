@@ -153,7 +153,8 @@ input:focus,select:focus{border-color:var(--gold);}
   #prod-grid .prod-card{min-height:132px;}
   #prod-grid .prod-name{font-size:1.32em;}
   #prod-grid .prod-price{font-size:1.15em;}
-  #s-home{background:linear-gradient(rgba(11,18,32,0.84),rgba(11,18,32,0.93)), url('./bg.jpg') center/cover no-repeat;}
+  #s-home{background:linear-gradient(rgba(11,18,32,0.55) 0, rgba(11,18,32,0) 20%, rgba(11,18,32,0) 100%), url('./bg.jpg') center/cover no-repeat;}
+  #s-home #home-title{text-shadow:0 1px 4px rgba(0,0,0,0.7);}
 </style>
 </head>
 <body>
@@ -663,7 +664,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.07.00';
+var APP_VERSION = '1.08.00';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -688,6 +689,10 @@ var LANG={
   print:{en:'Print',fi:'Tulosta',es:'Imprimir',de:'Drucken',sv:'Skriv ut'},
   rep_product:{en:'Product',fi:'Tuote',es:'Producto',de:'Produkt',sv:'Produkt'},
   choose_category:{en:'Choose a category',fi:'Valitse kategoria',es:'Elige una categor\u00EDa',de:'Kategorie w\u00E4hlen',sv:'V\u00E4lj kategori'},
+  m_idle:{en:'Auto-return timer',fi:'Palautusajastin',es:'Temporizador de retorno',de:'R\u00FCckkehr-Timer',sv:'\u00C5tervändartimer'},
+  sp_idle_return:{en:'Return to home after inactivity',fi:'Palaa kotisivulle k\u00E4ytt\u00E4m\u00E4tt\u00F6myyden j\u00E4lkeen',es:'Volver al inicio tras inactividad',de:'Nach Inaktivit\u00E4t zur\u00FCck zum Start',sv:'\u00C5terg\u00E5 till start efter inaktivitet'},
+  sp_idle_hint:{en:'How long the screen waits before returning to the home page.',fi:'Kuinka kauan n\u00E4ytt\u00F6 odottaa ennen kuin palaa kotisivulle.',es:'Cu\u00E1nto espera la pantalla antes de volver al inicio.',de:'Wie lange der Bildschirm wartet, bevor er zum Start zur\u00FCckkehrt.',sv:'Hur l\u00E4nge sk\u00E4rmen v\u00E4ntar innan den \u00E5terg\u00E5r till startsidan.'},
+  sp_idle_never:{en:'Never return automatically',fi:'\u00C4l\u00E4 palaa automaattisesti',es:'No volver autom\u00E1ticamente',de:'Nie automatisch zur\u00FCck',sv:'\u00C5terg\u00E5 aldrig automatiskt'},
   uncategorized:{en:'Uncategorized',fi:'Luokittelematon',es:'Sin categor\u00EDa',de:'Nicht kategorisiert',sv:'Okategoriserad'},
   restore_defaults:{en:'Restore default products',fi:'Palauta oletustuotteet',es:'Restaurar productos predeterminados',de:'Standardprodukte wiederherstellen',sv:'\u00C5terst\u00E4ll standardprodukter'},
   restore_defaults_body:{en:'Adds the default sauna menu. Existing products are kept.',fi:'Lis\u00E4\u00E4 oletushinnaston. Nykyiset tuotteet s\u00E4ilyv\u00E4t.',es:'A\u00F1ade el men\u00FA predeterminado. Los productos actuales se mantienen.',de:'F\u00FCgt das Standardmen\u00FC hinzu. Vorhandene Produkte bleiben.',sv:'L\u00E4gger till standardmenyn. Befintliga produkter beh\u00E5lls.'},
@@ -967,6 +972,12 @@ var LANG={
   lbl_income:{en:'Other income ({a})', fi:'Muu tulo ({a})', es:'Otro ingreso ({a})', de:'Sonstige Einnahme ({a})', sv:'\u00D6vrig int\u00E4kt ({a})'},
   lbl_card_pay:{en:'Card payment', fi:'Korttimaksu', es:'Pago con tarjeta', de:'Kartenzahlung', sv:'Kortbetalning'},
   lbl_cash_pay:{en:'Cash payment', fi:'K\u00E4teismaksu', es:'Pago en efectivo', de:'Barzahlung', sv:'Kontantbetalning'},
+  note_bill_settled:{en:'Bill settled', fi:'Lasku maksettu', es:'Cuenta liquidada', de:'Rechnung beglichen', sv:'Nota betald'},
+  note_split_payment:{en:'Split payment', fi:'Jaettu maksu', es:'Pago dividido', de:'Geteilte Zahlung', sv:'Delad betalning'},
+  note_old_debt:{en:'Old debt collected', fi:'Vanha velka peritty', es:'Deuda antigua cobrada', de:'Alte Schuld eingezogen', sv:'Gammal skuld inkasserad'},
+  note_walkin:{en:'Walk-in', fi:'Ohikulkija', es:'Sin cuenta', de:'Laufkundschaft', sv:'Direktk\u00F6p'},
+  note_walkin_split:{en:'Walk-in split', fi:'Ohikulkijan jaettu maksu', es:'Pago dividido sin cuenta', de:'Laufkundschaft geteilt', sv:'Direktk\u00F6p delat'},
+  note_cleared:{en:'Cleared on removal', fi:'Nollattu poistettaessa', es:'Saldado al eliminar', de:'Beim Entfernen ausgeglichen', sv:'Rensad vid borttagning'},
   no_customers:{en:'No customers.', fi:'Ei asiakkaita.', es:'Sin clientes.', de:'Keine Kunden.', sv:'Inga kunder.'},
   no_transactions:{en:'No transactions yet.', fi:'Ei tapahtumia viel\u00E4.', es:'A\u00FAn no hay transacciones.', de:'Noch keine Buchungen.', sv:'Inga transaktioner \u00E4nnu.'},
   no_transactions2:{en:'No transactions.', fi:'Ei tapahtumia.', es:'Sin transacciones.', de:'Keine Buchungen.', sv:'Inga transaktioner.'},
@@ -1122,7 +1133,7 @@ function blank(){
   return { customers:[], transactions:[], products:[], categories:[UNCAT],
     hiddenCustomers:[], groups:[], quickAmounts:[5,2,1,0.5,0.1], catNames:{},
     settings:{dayEnd:2,fontScale:1,cols:3,headerText:'Pub',headerImage:null,
-      tablesLabel:'Tables',tablesHidden:true,groupsLabel:'Groups',currency:'\u20AC',lang:'fi',defaultLang:'fi',adminName:'Admin',pin:'0000',
+      tablesLabel:'Tables',tablesHidden:true,groupsLabel:'Groups',currency:'\u20AC',lang:'fi',defaultLang:'fi',adminName:'Admin',pin:'0000',idleSeconds:60,idleOff:false,
       autoBackup:{on:false,cycle:'weekly',day:0,hour:15,last:0}},
     _tablesSeeded:false };
 }
@@ -1152,6 +1163,8 @@ function getState(){
       if(typeof s.defaultLang!=='string') s.defaultLang='fi';
       if(typeof s.adminName!=='string' || !s.adminName) s.adminName='Admin';
       if(typeof s.pin!=='string' || !/^[0-9]{4}$/.test(s.pin)) s.pin='0000';
+      if(typeof s.idleSeconds!=='number') s.idleSeconds=60;
+      if(typeof s.idleOff!=='boolean') s.idleOff=false;
       if(!st.catNames || typeof st.catNames!=='object') st.catNames={};
       if(!s.autoBackup || typeof s.autoBackup!=='object')
         s.autoBackup={ on:false, cycle:'weekly', day:0, hour:15, last:0 };
@@ -1713,6 +1726,9 @@ function changePinFlow(){
 var idleTimer=null;
 function resetIdle(){
   if(idleTimer) clearTimeout(idleTimer);
+  var cfg=getState().settings;
+  if(cfg.idleOff) return;
+  var secs=(typeof cfg.idleSeconds==='number' && cfg.idleSeconds>0)?cfg.idleSeconds:60;
   idleTimer=setTimeout(function(){
     if(document.querySelector('.modal-bg.open')){ resetIdle(); return; }
     var st=getState(), def=(st.settings&&st.settings.defaultLang)||'fi';
@@ -1720,8 +1736,11 @@ function resetIdle(){
     if(atHome && (st.settings.lang||'fi')===def){ resetIdle(); return; }
     if((st.settings.lang||'fi')!==def){ st.settings.lang=def; saveState(st); applyStaticText(); }
     cart={}; goHome();
-  },60000);
+  }, secs*1000);
 }
+function idleLabel(secs){ if(secs>=60){ var m=Math.floor(secs/60), r=secs%60; return m+' min'+(r?' '+r+' s':''); } return secs+' s'; }
+function idleRangeInput(v){ var secs=parseInt(v,10); var el=document.getElementById('idle-val'); if(el) el.textContent=idleLabel(secs); var st=getState(); st.settings.idleSeconds=secs; saveState(st); resetIdle(); }
+function toggleIdleOff(){ var st=getState(); st.settings.idleOff=!st.settings.idleOff; if(saveState(st)){ renderSetPage(); renderSettings(); resetIdle(); } }
 ['click','touchstart','keydown'].forEach(function(ev){ document.addEventListener(ev,resetIdle,true); });
 
 /* ---------- MULTILINGUAL PRODUCTS & CATEGORIES ---------- */
@@ -1733,6 +1752,24 @@ function pName(p){
   if(nm.fi) return nm.fi;
   for(var k in nm){ if(nm[k]) return nm[k]; }
   return p.name||'';
+}
+function itemName(i){
+  if(i && i.id){
+    var st=getState();
+    for(var k=0;k<st.products.length;k++){ if(st.products[k].id===i.id) return pName(st.products[k]); }
+  }
+  return i && i.name ? i.name : '';
+}
+function noteLabel(n){
+  if(!n) return '';
+  var M={'Bill settled':'note_bill_settled','Written off (loss)':'lbl_writeoff','Split payment':'note_split_payment','Old debt collected':'note_old_debt','Walk-in':'note_walkin','Walk-in split':'note_walkin_split','Cleared on removal':'note_cleared'};
+  return M[n] ? t(M[n]) : esc(n);
+}
+function backfillItemIds(st){
+  if(!st.products || !st.transactions) return;
+  var byName={};
+  st.products.forEach(function(p){ var nm=p.names||{}; for(var k in nm){ if(nm[k]) byName[nm[k].toLowerCase()]=p.id; } if(p.name) byName[p.name.toLowerCase()]=p.id; });
+  st.transactions.forEach(function(tx){ if(tx.items) tx.items.forEach(function(it){ if(!it.id && it.name && byName[it.name.toLowerCase()]) it.id=byName[it.name.toLowerCase()]; }); });
 }
 function catLabel(key){
   if(key===UNCAT) return t('uncategorized');
@@ -1769,7 +1806,7 @@ function obNext(){
     if(obPicked.length){
       var st=getState(), c=findCustomer(st,obCustId);
       if(c){
-        var items=obPicked.map(function(p){ return {name:pName(p),price:p.price,qty:1}; });
+        var items=obPicked.map(function(p){ return {id:p.id,name:pName(p),price:p.price,qty:1}; });
         var amount=obPicked.reduce(function(a,p){ return a+p.price; },0);
         pushTx(st,{customerId:c.id,customerName:c.name,type:'debt',amount:amount,items:items});
         saveState(st);
@@ -1816,7 +1853,7 @@ function seedDefaults(st){
   P('Juomat',3.5,false,false,{fi:'Hartwall Aquarius Seltzer',en:'Hartwall Aquarius Seltzer',es:'Hartwall Aquarius Seltzer',de:'Hartwall Aquarius Seltzer',sv:'Hartwall Aquarius Seltzer'});
   P('Juomat',4,false,false,{fi:'Siideri',en:'Cider',es:'Sidra',de:'Cider',sv:'Cider'});
   P('Juomat',4,false,false,{fi:'Energiajuoma',en:'Energy drink',es:'Bebida energ\u00E9tica',de:'Energydrink',sv:'Energidryck'});
-  P('Juomat',2.5,false,false,{fi:'Limonadi',en:'Lemonade',es:'Limonada',de:'Limonade',sv:'L\u00E4sk'});
+  P('Juomat',2.5,false,false,{fi:'Limpparit',en:'Soft drinks',es:'Refrescos',de:'Limonaden',sv:'L\u00E4sk'});
   P('Juomat',1,false,false,{fi:'Vesi',en:'Water',es:'Agua',de:'Wasser',sv:'Vatten'});
   P('Ruoka',3,false,false,{fi:'Makkara',en:'Sausage',es:'Salchicha',de:'Wurst',sv:'Korv'});
   P('Ruoka',3,false,false,{fi:'Tapas',en:'Tapas',es:'Tapas',de:'Tapas',sv:'Tapas'});
@@ -1903,7 +1940,7 @@ function changeQty(pid,d){
 function clearCart(){ cart={}; refreshCartViews(); }
 function cartLines(){ return Object.keys(cart).map(function(k){ return cart[k]; }); }
 function cartTotal(){ return cartLines().reduce(function(s,l){ return s+l.price*l.qty; },0); }
-function cartItems(){ return cartLines().map(function(l){ return {name:l.name,qty:l.qty,price:l.price}; }); }
+function cartItems(){ return cartLines().map(function(l){ return {id:l.id,name:l.name,qty:l.qty,price:l.price}; }); }
 function refreshCartViews(){
   var walkin=document.getElementById('s-walkin').classList.contains('active');
   renderProds(walkin?'wi-prod-grid':'prod-grid');
@@ -1997,7 +2034,7 @@ function toggleDay(d){
 }
 function txLabel(tx){
   var mw=t(tx.method==='card'?'card':'cash').toLowerCase();
-  if(tx.type==='debt') return (tx.items && tx.items.length) ? tx.items.map(function(i){ return esc(i.name); }).join(', ') : t('lbl_purchase');
+  if(tx.type==='debt') return (tx.items && tx.items.length) ? tx.items.map(function(i){ return esc(itemName(i)); }).join(', ') : t('lbl_purchase');
   if(tx.type==='writeoff') return t('lbl_writeoff');
   if(tx.type==='credit') return t('lbl_credit').replace('{a}',mw);
   if(tx.type==='recovery') return t('lbl_recovery').replace('{a}',mw);
@@ -2012,11 +2049,11 @@ function txHTML(t,withName,hideDate){
   else if(t.type==='credit') cls='credit';
   else if(t.method==='card') cls='card';
   var items = (t.items && t.items.length)
-    ? '<div class="tx-items">'+t.items.map(function(i){ return esc(i.name)+' \u00D7'+i.qty+' \u2014 '+f(i.price*i.qty)+EUR; }).join('<br>')+'</div>'
+    ? '<div class="tx-items">'+t.items.map(function(i){ return esc(itemName(i))+' \u00D7'+i.qty+' \u2014 '+f(i.price*i.qty)+EUR; }).join('<br>')+'</div>'
     : '';
   var head = withName ? (esc(t.customerName||'?')+' \u00B7 '+label) : label;
   var when = hideDate ? fmtTime(t.ts) : (fmtDate(txBarDate(t))+' '+fmtTime(t.ts));
-  var note = t.note ? '<div class="tx-items" style="font-style:italic;">'+esc(t.note)+'</div>' : '';
+  var note = t.note ? '<div class="tx-items" style="font-style:italic;">'+noteLabel(t.note)+'</div>' : '';
   var edit = '<button class="qbtn" style="width:auto;padding:0 12px;color:var(--gold2);" '+
     'onclick="openTxEdit(\''+t.id+'\')">\u270E</button>';
   return '<div class="tx '+cls+'"><div class="tx-top"><span>'+head+'</span>'+
@@ -3236,13 +3273,13 @@ function productTotals(txs){
   var map={}, custom={qty:0,sum:0};
   txs.forEach(function(t){
     if(t.type!=='debt' && t.type!=='pay') return;
-    // walk-in sales are 'pay' with items; tab orders are 'debt' with items
     if(!t.items || !t.items.length){ return; }
     t.items.forEach(function(it){
       if(it.name==='Custom'){ custom.qty+=(it.qty||1); custom.sum+=(it.price*(it.qty||1)); return; }
-      if(!map[it.name]) map[it.name]={name:it.name,qty:0,sum:0};
-      map[it.name].qty+=(it.qty||1);
-      map[it.name].sum+=(it.price*(it.qty||1));
+      var key = it.id || ('n:'+it.name);
+      if(!map[key]) map[key]={id:it.id||null,name:itemName(it),qty:0,sum:0};
+      map[key].qty+=(it.qty||1);
+      map[key].sum+=(it.price*(it.qty||1));
     });
   });
   var arr=Object.keys(map).map(function(k){ return map[k]; });
@@ -3824,6 +3861,7 @@ function renderSettings(){
   document.getElementById('set-body').innerHTML=
     menuRow(t('m_barday'),t('m_ends_at')+' '+pad2(s.dayEnd)+':00', "openSetPage('day')")+
     menuRow(t('change_pin'), '\u2022\u2022\u2022\u2022', 'changePinFlow()')+
+    menuRow(t('m_idle'), s.idleOff?t('sp_idle_never'):idleLabel(s.idleSeconds||60), "openSetPage('idle')")+
     menuRow(t('m_cats_products'), st.products.length+' '+(st.products.length===1?t('m_product'):t('m_products')), 'openCategories()')+
     menuRow(t('m_cashflow'),t('m_cashflow_sub'), "openSetPage('cash')")+
     menuRow(t('m_updates'),t('m_version')+' '+APP_VERSION, "openSetPage('upd')")+
@@ -3877,6 +3915,15 @@ function renderSetPage(){
     h='<div class="card-box"><div class="label">'+t('m_version')+' '+APP_VERSION+'</div>'+
       '<button class="btn-full" style="background:var(--bg3);border-color:var(--gold);color:var(--gold2);" onclick="checkUpdate()">'+t('sp_check_updates')+'</button>'+
       '<div id="upd-status" class="hint" style="text-align:center;"></div></div>';
+  } else if(setPage==='idle'){
+    title=t('m_idle');
+    var isecs=s.idleSeconds||60;
+    h='<div class="card-box"><div class="label">'+t('sp_idle_return')+'</div>'+
+      '<input type="range" min="30" max="300" step="15" value="'+isecs+'" id="idle-range" oninput="idleRangeInput(this.value)" '+(s.idleOff?'disabled':'')+' style="width:100%;">'+
+      '<div id="idle-val" style="text-align:center;color:var(--gold2);font-weight:700;font-size:1.2em;margin:8px 0;">'+idleLabel(isecs)+'</div>'+
+      '<div class="hint">'+t('sp_idle_hint')+'</div></div>'+
+      '<div class="card-box"><button class="btn-full" style="'+(s.idleOff?'background:var(--gbg);border-color:var(--green);color:var(--green);':'')+'" onclick="toggleIdleOff()">'+
+      (s.idleOff?'\u2611 ':'\u2610 ')+t('sp_idle_never')+'</button></div>';
   } else {
     title=t('sp_backup_reset');
     var kb=Math.round(storageBytes()/1024);
@@ -4211,6 +4258,7 @@ function applyUpdate(){
 /* ---------- INIT ---------- */
 applyAppearance();
 (function(){ var st=getState(); if(!st.products || !st.products.length){ seedDefaults(st); saveState(st); } })();
+(function(){ var st=getState(); if(!st._itemIdsBackfilled){ backfillItemIds(st); st._itemIdsBackfilled=true; saveState(st); } })();
 applyStaticText();
 renderHome();
 ensureFlag();
