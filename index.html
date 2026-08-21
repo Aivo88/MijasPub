@@ -144,8 +144,17 @@ input:focus,select:focus{border-color:var(--gold);}
   #prod-grid .prod-card{min-height:118px;}
   #prod-grid .prod-name{font-size:1.18em;}
   #prod-grid .prod-price{font-size:1.1em;}
-  #home-list .cust-name{font-size:1.55em;}
-  #home-list .cust-item-tap{min-height:80px;display:flex;align-items:center;justify-content:center;}
+  #hdr-slot{display:none;}
+  #home-title{text-align:center;}
+  #home-list .cust-name{font-size:2.2em;text-align:center;}
+  #home-list .cust-item-tap{min-height:112px;display:flex;align-items:center;justify-content:center;}
+  #cust-title{font-size:2.9em !important;}
+  #cust-balance{font-size:2.2em !important;}
+  #pane-menu .btn-full{min-height:104px !important;font-size:1.55em !important;}
+  #cash-list .row{padding:0.95em 1.05em;}
+  #cash-list .row-main div{font-size:1.55em !important;}
+  #cash-list .cust-bal{font-size:1.45em;}
+  #cash-list .btn-settled-list{font-size:1.2em;padding:0.9em 1.35em;min-height:62px;}
   #cat-bar{display:grid;grid-template-columns:1fr 1fr;gap:0.6em;margin-bottom:0.8em;}
   .cat-big{min-height:72px;font-size:1.3em;font-weight:700;background:var(--bg3);border:1.6px solid var(--gold);border-radius:12px;color:var(--gold2);cursor:pointer;padding:0.5em;line-height:1.15;}
   .cat-big.active{background:var(--gbg);border-color:var(--green);color:var(--green);}
@@ -653,7 +662,7 @@ input:focus,select:focus{border-color:var(--gold);}
     <div class="modal-title" id="cf-title"></div>
     <div style="color:var(--text2);text-align:center;line-height:1.6;margin-bottom:1em;" id="cf-body"></div>
     <button class="btn-full" style="background:var(--rbg);border-color:var(--red);color:var(--red);margin-bottom:0.6em;" id="cf-ok">Confirm</button>
-    <button class="btn-modal-cancel" onclick="closeModal('m-confirm')">Cancel</button>
+    <button class="btn-modal-cancel" id="cf-cancel" onclick="closeModal('m-confirm')" data-t="cancel">Cancel</button>
   </div>
 </div>
 
@@ -664,7 +673,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.09.00';
+var APP_VERSION = '1.10.00';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -689,6 +698,9 @@ var LANG={
   print:{en:'Print',fi:'Tulosta',es:'Imprimir',de:'Drucken',sv:'Skriv ut'},
   rep_product:{en:'Product',fi:'Tuote',es:'Producto',de:'Produkt',sv:'Produkt'},
   choose_category:{en:'Choose a category',fi:'Valitse kategoria',es:'Elige una categor\u00EDa',de:'Kategorie w\u00E4hlen',sv:'V\u00E4lj kategori'},
+  range_day:{en:'Day',fi:'P\u00E4iv\u00E4',es:'D\u00EDa',de:'Tag',sv:'Dag'},
+  range_month:{en:'Month',fi:'Kuukausi',es:'Mes',de:'Monat',sv:'M\u00E5nad'},
+  range_all:{en:'All time',fi:'Koko aika',es:'Todo',de:'Gesamt',sv:'Hela tiden'},
   m_idle:{en:'Auto-return timer',fi:'Palautusajastin',es:'Temporizador de retorno',de:'R\u00FCckkehr-Timer',sv:'\u00C5tervändartimer'},
   sp_idle_return:{en:'Return to home after inactivity',fi:'Palaa kotisivulle k\u00E4ytt\u00E4m\u00E4tt\u00F6myyden j\u00E4lkeen',es:'Volver al inicio tras inactividad',de:'Nach Inaktivit\u00E4t zur\u00FCck zum Start',sv:'\u00C5terg\u00E5 till start efter inaktivitet'},
   sp_idle_hint:{en:'How long the screen waits before returning to the home page.',fi:'Kuinka kauan n\u00E4ytt\u00F6 odottaa ennen kuin palaa kotisivulle.',es:'Cu\u00E1nto espera la pantalla antes de volver al inicio.',de:'Wie lange der Bildschirm wartet, bevor er zum Start zur\u00FCckkehrt.',sv:'Hur l\u00E4nge sk\u00E4rmen v\u00E4ntar innan den \u00E5terg\u00E5r till startsidan.'},
@@ -1236,6 +1248,7 @@ function toast(m,t){
 function showConfirm(title,body,onOk,okLabel,okStyle){
   document.getElementById('cf-title').textContent=title;
   document.getElementById('cf-body').textContent=body;
+  var cfc=document.getElementById('cf-cancel'); if(cfc) cfc.textContent=t('cancel');
   var btn=document.getElementById('cf-ok');
   btn.textContent=okLabel||t('confirm');
   btn.setAttribute('style', okStyle ||
@@ -1454,6 +1467,7 @@ function renderActive(){
   else if(id==='s-custman') T(function(){ if(typeof renderCustomersManage==='function') renderCustomersManage(); });
   else if(id==='s-rep') T(function(){ if(typeof setRepTab==='function') setRepTab(typeof repTab!=='undefined'&&repTab?repTab:'day'); });
   else if(id==='s-prod') T(function(){ if(typeof setProdTab==='function') setProdTab(typeof prodTab!=='undefined'&&prodTab?prodTab:'top'); });
+  else if(id==='s-export') T(function(){ if(typeof renderExport==='function') renderExport(); });
 }
 function openCashierHome(){ show('s-cashier'); renderCashierHome(); }
 function renderCashierHome(){
@@ -1713,6 +1727,7 @@ function checkPin(){
   if(pinBuf!==good){ pinBuf=''; updatePinDots(); toast(t('wrong_pin'),'err'); return; }
   closeModal('m-pin');
   var dest=pinDest; pinDest=null; pinBuf='';
+  if(typeof dest==='function'){ dest(); return; }
   if(dest==='home') openCashierHome();
   else if(dest==='cust') showCustView('bal');
 }
@@ -2224,6 +2239,10 @@ function addHouseEntry(kind){
 /* ---------- EDIT / DELETE A TRANSACTION ---------- */
 var editingTxId=null;
 function openTxEdit(id){
+  if(document.getElementById('s-cust').classList.contains('active')){ askCashierPin(function(){ _openTxEdit(id); }); return; }
+  _openTxEdit(id);
+}
+function _openTxEdit(id){
   var st=getState(), t=null;
   for(var i=0;i<st.transactions.length;i++) if(st.transactions[i].id===id) t=st.transactions[i];
   if(!t) return;
@@ -3319,21 +3338,47 @@ function renderTopSellers(){
   }
   document.getElementById('prod-report-body').innerHTML=body;
 }
-var dailyExcluded={}, dailyRows=[], dailyDate=null, dailyLang=null;
+var dailyExcluded={}, dailyRows=[], dailyDate=null, dailyLang=null, dailyMode='day', dailyMonth=null, dailyYear=null;
+function dailyFilteredTxs(st){
+  if(dailyMode==='all') return st.transactions.slice();
+  if(dailyMode==='month'){
+    var a=new Date(dailyYear,dailyMonth,1,0,0,0,0).getTime(), b=new Date(dailyYear,dailyMonth+1,1,0,0,0,0).getTime();
+    return st.transactions.filter(function(t){ return t.ts>=a && t.ts<b; });
+  }
+  return st.transactions.filter(function(t){ return txBarDate(t)===dailyDate; });
+}
+function dailyRangeLabel(){
+  if(dailyMode==='all') return t('range_all');
+  if(dailyMode==='month') return monthName(dailyMonth)+' '+dailyYear;
+  return fmtDate(dailyDate);
+}
 function renderProdDaily(){
   var st=getState();
   if(dailyDate===null) dailyDate=todayBarDate();
   if(dailyLang===null) dailyLang=curLang();
-  dailyRows=productTotals(st.transactions.filter(function(t){ return txBarDate(t)===dailyDate; }));
-  var isToday = dailyDate===todayBarDate();
-  var nav='<div class="row" style="justify-content:space-between;margin-bottom:0.6em;">'+
-    '<button class="qbtn" onclick="stepDaily(-1)">\u2039</button>'+
-    '<div style="flex:1;text-align:center;padding:0 8px;"><input type="date" id="daily-date" value="'+isoDate(new Date(dailyDate))+'" max="'+isoDate(new Date(todayBarDate()))+'" onchange="pickDailyDate(this.value)" style="width:100%;background:var(--bg3);color:var(--gold2);border:1px solid var(--gold);border-radius:8px;padding:8px;font-size:1em;"></div>'+
-    '<button class="qbtn" onclick="stepDaily(1)"'+(isToday?' disabled style="opacity:0.35;"':'')+'>\u203A</button></div>';
+  if(dailyMonth===null){ var n0=new Date(); dailyMonth=n0.getMonth(); dailyYear=n0.getFullYear(); }
+  dailyRows=productTotals(dailyFilteredTxs(st));
+  function modeBtn(m,lbl){ return '<button class="tab'+(dailyMode===m?' active':'')+'" onclick="setDailyMode(\''+m+'\')">'+lbl+'</button>'; }
+  var modeBar='<div class="tabs" style="margin-bottom:0.6em;">'+modeBtn('day',t('range_day'))+modeBtn('month',t('range_month'))+modeBtn('all',t('range_all'))+'</div>';
+  var picker='';
+  if(dailyMode==='day'){
+    var isToday=dailyDate===todayBarDate();
+    picker='<div class="row" style="justify-content:space-between;margin-bottom:0.6em;">'+
+      '<button class="qbtn" onclick="stepDaily(-1)">\u2039</button>'+
+      '<div style="flex:1;text-align:center;padding:0 8px;"><input type="date" id="daily-date" value="'+isoDate(new Date(dailyDate))+'" max="'+isoDate(new Date(todayBarDate()))+'" onchange="pickDailyDate(this.value)" style="width:100%;background:var(--bg3);color:var(--gold2);border:1px solid var(--gold);border-radius:8px;padding:8px;font-size:1em;"></div>'+
+      '<button class="qbtn" onclick="stepDaily(1)"'+(isToday?' disabled style="opacity:0.35;"':'')+'>\u203A</button></div>';
+  } else if(dailyMode==='month'){
+    var now=new Date(), minY=now.getFullYear()-1;
+    st.transactions.forEach(function(t){ var yy=new Date(t.ts).getFullYear(); if(yy<minY) minY=yy; });
+    var mo=''; for(var mi=0;mi<12;mi++) mo+='<option value="'+mi+'"'+(mi===dailyMonth?' selected':'')+'>'+monthName(mi)+'</option>';
+    var yo=''; for(var yy=now.getFullYear(); yy>=minY; yy--) yo+='<option value="'+yy+'"'+(yy===dailyYear?' selected':'')+'>'+yy+'</option>';
+    picker='<div class="row" style="gap:0.5em;margin-bottom:0.6em;"><select id="daily-month" onchange="pickDailyMonth()" style="flex:1;background:var(--bg3);color:var(--gold2);border:1px solid var(--gold);border-radius:8px;padding:8px;">'+mo+'</select>'+
+      '<select id="daily-year" onchange="pickDailyMonth()" style="background:var(--bg3);color:var(--gold2);border:1px solid var(--gold);border-radius:8px;padding:8px;">'+yo+'</select></div>';
+  }
   var langSel='<div class="row" style="justify-content:space-between;margin-bottom:0.7em;"><div style="align-self:center;">'+t('report_language')+'</div>'+
     '<select id="daily-lang" onchange="dailyLang=this.value" style="background:var(--bg3);color:var(--gold2);border:1px solid var(--gold);border-radius:8px;padding:8px;">'+
     LANGS.map(function(L){ return '<option value="'+L[0]+'"'+(dailyLang===L[0]?' selected':'')+'>'+L[1]+'</option>'; }).join('')+'</select></div>';
-  var body=nav+langSel;
+  var body=modeBar+picker+langSel;
   if(!dailyRows.length){ body+='<div class="empty-hint">'+t('no_sales_today')+'</div>'; }
   else{
     body+=dailyRows.map(function(r,i){
@@ -3347,23 +3392,15 @@ function renderProdDaily(){
   }
   document.getElementById('prod-report-body').innerHTML=body;
 }
-function stepDaily(dir){
-  var st=getState(); var base=new Date(dailyDate); base.setDate(base.getDate()+dir); base.setHours(12,0,0,0);
-  var nd=computeBarDate(base.getTime(), st.settings.dayEnd);
-  if(nd>todayBarDate()) return;
-  dailyDate=nd; renderProdDaily();
-}
-function pickDailyDate(val){
-  if(!val) return; var st=getState(); var d=new Date(val+'T12:00:00');
-  dailyDate=computeBarDate(d.getTime(), st.settings.dayEnd);
-  if(dailyDate>todayBarDate()) dailyDate=todayBarDate();
-  renderProdDaily();
-}
+function setDailyMode(m){ dailyMode=m; renderProdDaily(); }
+function pickDailyMonth(){ var m=document.getElementById('daily-month'), y=document.getElementById('daily-year'); if(m) dailyMonth=parseInt(m.value,10); if(y) dailyYear=parseInt(y.value,10); renderProdDaily(); }
+function stepDaily(dir){ var st=getState(); var base=new Date(dailyDate); base.setDate(base.getDate()+dir); base.setHours(12,0,0,0); var nd=computeBarDate(base.getTime(), st.settings.dayEnd); if(nd>todayBarDate()) return; dailyDate=nd; renderProdDaily(); }
+function pickDailyDate(val){ if(!val) return; var st=getState(); var d=new Date(val+'T12:00:00'); dailyDate=computeBarDate(d.getTime(), st.settings.dayEnd); if(dailyDate>todayBarDate()) dailyDate=todayBarDate(); renderProdDaily(); }
 function toggleDaily(i){ var r=dailyRows[i]; if(!r) return; if(dailyExcluded[r.name]) delete dailyExcluded[r.name]; else dailyExcluded[r.name]=true; renderProdDaily(); }
 function printDaily(){
   var st=getState(), lang=dailyLang||curLang();
   var rows=dailyRows.filter(function(r){ return !dailyExcluded[r.name]; });
-  var LBL={ title:{fi:'P\u00E4iv\u00E4raportti',en:'Daily report',es:'Informe diario',de:'Tagesbericht',sv:'Dagsrapport'},
+  var LBL={ title:{fi:'Tuoteraportti',en:'Product report',es:'Informe de productos',de:'Produktbericht',sv:'Produktrapport'},
             product:{fi:'Tuote',en:'Product',es:'Producto',de:'Produkt',sv:'Produkt'},
             pcs:{fi:'kpl',en:'pcs',es:'uds',de:'Stk',sv:'st'},
             total:{fi:'Yhteens\u00E4',en:'Total',es:'Total',de:'Gesamt',sv:'Totalt'} };
@@ -3373,7 +3410,7 @@ function printDaily(){
   var lines=[], y=60;
   var title=(st.settings.headerText && st.settings.headerText!=='Pub')?st.settings.headerText:'Sauna Mijas';
   lines.push({text:title,x:50,y:y,size:18,bold:true}); y+=22;
-  lines.push({text:L('title')+' - '+fmtDate(dailyDate),x:50,y:y,size:12,bold:true}); y+=24;
+  lines.push({text:L('title')+' - '+dailyRangeLabel(),x:50,y:y,size:12,bold:true}); y+=24;
   lines.push({text:L('product'),x:50,y:y,size:11,bold:true});
   lines.push({text:L('pcs'),x:340,y:y,size:11,bold:true});
   lines.push({text:L('total'),x:430,y:y,size:11,bold:true}); y+=16;
@@ -3386,7 +3423,8 @@ function printDaily(){
   lines.push({text:L('total'),x:50,y:y,size:12,bold:true});
   lines.push({text:String(gQty),x:340,y:y,size:12,bold:true});
   lines.push({text:money(gTot),x:430,y:y,size:12,bold:true});
-  var name=L('title')+' '+isoDate(new Date(dailyDate))+'.pdf';
+  var fnameRange = dailyMode==='all' ? 'all' : (dailyMode==='month' ? (dailyYear+'-'+pad2(dailyMonth+1)) : isoDate(new Date(dailyDate)));
+  var name=L('title')+' '+fnameRange+'.pdf';
   headerLogoForPDF(st,function(logo){
     if(logo){ logo.x=50; logo.y=40; }
     var blob=new Blob([pdfBytes(buildPDF(lines,logo))],{type:'application/pdf'});
@@ -3395,7 +3433,8 @@ function printDaily(){
     toast(t('ts_pdf_created'),'ok');
   });
 }
-/* Customer list -> tap a name -> that customer's product breakdown for the
+
+/* Customer list -> tap a name -> that customer/* Customer list -> tap a name -> that customer's product breakdown for the
    selected month or all time. */
 var prodCustId=null;
 function renderProdCustomers(){
