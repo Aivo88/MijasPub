@@ -673,7 +673,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.11.03';
+var APP_VERSION = '1.11.04';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -1268,7 +1268,7 @@ function askText(title,val,onOk,showFlag,titleKey,numeric){
   var fr=document.getElementById('mt-flag-row');
   if(fr){ fr.style.display = showFlag?'':'none'; if(showFlag) updateAllFlags(); }
   var inp=document.getElementById('mt-input'); inp.value=val||'';
-  if(numeric){ inp.setAttribute('inputmode','numeric'); inp.setAttribute('pattern','[0-9]*'); inp.type='tel'; inp.style.fontSize='2.2em'; inp.style.textAlign='center'; inp.style.letterSpacing='0.35em'; inp.style.fontWeight='700'; inp.style.padding='0.4em'; }
+  if(numeric){ inp.setAttribute('inputmode','numeric'); inp.setAttribute('pattern','[0-9]*'); inp.type='tel'; inp.style.fontSize='1.7em'; inp.style.textAlign='center'; inp.style.letterSpacing='normal'; inp.style.fontWeight='700'; inp.style.padding='0.35em'; }
   else { inp.removeAttribute('inputmode'); inp.removeAttribute('pattern'); inp.type='text'; inp.style.fontSize=''; inp.style.textAlign=''; inp.style.letterSpacing=''; inp.style.fontWeight=''; inp.style.padding=''; }
   document.getElementById('mt-ok').onclick=function(){
     var v=inp.value.trim(); if(!v) return;

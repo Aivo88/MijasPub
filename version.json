@@ -1,5 +1,5 @@
 {
-  "version": "1.11.03",
-  "cache": "mijaspub-v20",
-  "notes": "Asetuksiin 'Fonttien ja nappien koko' -liukusaadin (80-200%), joka suurentaa koko appin (napit, fontit, valit) kerralla. PIN-koodin vaihtokentta nyt iso ja keskitetty. Molemmat pelkkia web-muutoksia -> tulevat Tarkista paivitykset -napilla ilman uutta APK:ta."
+  "version": "1.11.04",
+  "cache": "mijaspub-v21",
+  "notes": "PIN-koodin vaihtokentta: poistettu liian leveat valit numeroiden valilta (nyt siisti 1234), fonttia hieman pienennetty."
 }
