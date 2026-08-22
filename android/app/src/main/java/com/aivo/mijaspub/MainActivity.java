@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.webkit.ServiceWorkerClient;
+import android.webkit.ServiceWorkerController;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -17,7 +19,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.webkit.WebViewAssetLoader;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,17 +26,13 @@ public class MainActivity extends AppCompatActivity {
     private ValueCallback<Uri[]> filePathCallback;
     private ActivityResultLauncher<Intent> fileChooser;
 
-    private static final String START_URL =
-            "https://appassets.androidplatform.net/assets/index.html";
+    // Ladataan appi netista; service worker tallentaa sen laitteelle offline-kayttoon.
+    private static final String START_URL = "https://aivo88.github.io/MijasPub/";
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        final WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder()
-                .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
-                .build();
 
         web = new WebView(this);
         setContentView(web);
@@ -45,15 +42,21 @@ public class MainActivity extends AppCompatActivity {
         s.setDomStorageEnabled(true);
         s.setDatabaseEnabled(true);
         s.setMediaPlaybackRequiresUserGesture(false);
-        s.setAllowFileAccess(false);
-        s.setAllowContentAccess(false);
+        s.setCacheMode(WebSettings.LOAD_DEFAULT);
 
-        web.setWebViewClient(new WebViewClient() {
-            @Override
-            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                return assetLoader.shouldInterceptRequest(request.getUrl());
-            }
-        });
+        // Salli service worker -> appi tallentaa itsensa laitteelle, jotta se toimii offline.
+        try {
+            ServiceWorkerController swc = ServiceWorkerController.getInstance();
+            swc.getServiceWorkerWebSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
+            swc.setServiceWorkerClient(new ServiceWorkerClient() {
+                @Override
+                public WebResourceResponse shouldInterceptRequest(WebResourceRequest request) {
+                    return null; // anna hakea normaalisti verkosta/valimuistista
+                }
+            });
+        } catch (Exception ignored) {}
+
+        web.setWebViewClient(new WebViewClient());
 
         fileChooser = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -104,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
         hideSystemUI();
     }
 
-    // Kioskitila: piilota Androidin ala- ja ylapalkit (back/home/recents).
+    // Kioskitila: piilota Androidin ala- ja ylapalkit.
     private void hideSystemUI() {
         View decor = getWindow().getDecorView();
         decor.setSystemUiVisibility(
