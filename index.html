@@ -673,7 +673,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.11.02';
+var APP_VERSION = '1.11.03';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -702,6 +702,8 @@ var LANG={
   range_month:{en:'Month',fi:'Kuukausi',es:'Mes',de:'Monat',sv:'M\u00E5nad'},
   range_all:{en:'All time',fi:'Koko aika',es:'Todo',de:'Gesamt',sv:'Hela tiden'},
   m_idle:{en:'Auto-return timer',fi:'Palautusajastin',es:'Temporizador de retorno',de:'R\u00FCckkehr-Timer',sv:'\u00C5tervändartimer'},
+  m_uiscale:{en:'Font & button size',fi:'Fonttien ja nappien koko',es:'Tama\u00F1o de fuente y botones',de:'Schrift- und Buttongr\u00F6\u00DFe',sv:'Text- och knappstorlek'},
+  sp_uiscale_hint:{en:'Scales the whole app up or down.',fi:'Suurentaa tai pienent\u00E4\u00E4 koko appia.',es:'Escala toda la aplicaci\u00F3n.',de:'Skaliert die gesamte App.',sv:'Skalar hela appen.'},
   sp_idle_return:{en:'Return to home after inactivity',fi:'Palaa kotisivulle k\u00E4ytt\u00E4m\u00E4tt\u00F6myyden j\u00E4lkeen',es:'Volver al inicio tras inactividad',de:'Nach Inaktivit\u00E4t zur\u00FCck zum Start',sv:'\u00C5terg\u00E5 till start efter inaktivitet'},
   sp_idle_hint:{en:'How long the screen waits before returning to the home page.',fi:'Kuinka kauan n\u00E4ytt\u00F6 odottaa ennen kuin palaa kotisivulle.',es:'Cu\u00E1nto espera la pantalla antes de volver al inicio.',de:'Wie lange der Bildschirm wartet, bevor er zum Start zur\u00FCckkehrt.',sv:'Hur l\u00E4nge sk\u00E4rmen v\u00E4ntar innan den \u00E5terg\u00E5r till startsidan.'},
   sp_idle_never:{en:'Never return automatically',fi:'\u00C4l\u00E4 palaa automaattisesti',es:'No volver autom\u00E1ticamente',de:'Nie automatisch zur\u00FCck',sv:'\u00C5terg\u00E5 aldrig automatiskt'},
@@ -1266,8 +1268,8 @@ function askText(title,val,onOk,showFlag,titleKey,numeric){
   var fr=document.getElementById('mt-flag-row');
   if(fr){ fr.style.display = showFlag?'':'none'; if(showFlag) updateAllFlags(); }
   var inp=document.getElementById('mt-input'); inp.value=val||'';
-  if(numeric){ inp.setAttribute('inputmode','numeric'); inp.setAttribute('pattern','[0-9]*'); inp.type='tel'; }
-  else { inp.removeAttribute('inputmode'); inp.removeAttribute('pattern'); inp.type='text'; }
+  if(numeric){ inp.setAttribute('inputmode','numeric'); inp.setAttribute('pattern','[0-9]*'); inp.type='tel'; inp.style.fontSize='2.2em'; inp.style.textAlign='center'; inp.style.letterSpacing='0.35em'; inp.style.fontWeight='700'; inp.style.padding='0.4em'; }
+  else { inp.removeAttribute('inputmode'); inp.removeAttribute('pattern'); inp.type='text'; inp.style.fontSize=''; inp.style.textAlign=''; inp.style.letterSpacing=''; inp.style.fontWeight=''; inp.style.padding=''; }
   document.getElementById('mt-ok').onclick=function(){
     var v=inp.value.trim(); if(!v) return;
     window._mtTitleKey=null; closeModal('m-text'); onOk(v);
@@ -1383,7 +1385,8 @@ function ensureTables(){ var st=getState(); migrateGroups(st); saveState(st); }
 function applyAppearance(){
   var st=getState(), s=st.settings;
   applyCurrency(st);
-  document.body.style.fontSize=(16*s.fontScale)+'px';
+  document.body.style.fontSize='16px';
+  document.body.style.zoom = s.fontScale;
   document.documentElement.style.setProperty('--cols', s.cols);
   renderHeader();
 }
@@ -1764,6 +1767,7 @@ function resetIdle(){
 function idleLabel(secs){ if(secs>=60){ var m=Math.floor(secs/60), r=secs%60; return m+' min'+(r?' '+r+' s':''); } return secs+' s'; }
 function idleRangeInput(v){ var secs=parseInt(v,10); var el=document.getElementById('idle-val'); if(el) el.textContent=idleLabel(secs); var st=getState(); st.settings.idleSeconds=secs; saveState(st); resetIdle(); }
 function toggleIdleOff(){ var st=getState(); st.settings.idleOff=!st.settings.idleOff; if(saveState(st)){ renderSetPage(); renderSettings(); resetIdle(); } }
+function scaleRangeInput(v){ var pct=parseInt(v,10); var el=document.getElementById('scale-val'); if(el) el.textContent=pct+'%'; var st=getState(); st.settings.fontScale=pct/100; saveState(st); applyAppearance(); }
 ['click','touchstart','keydown'].forEach(function(ev){ document.addEventListener(ev,resetIdle,true); });
 
 /* ---------- MULTILINGUAL PRODUCTS & CATEGORIES ---------- */
@@ -3917,6 +3921,7 @@ function renderSettings(){
     menuRow(t('m_barday'),t('m_ends_at')+' '+pad2(s.dayEnd)+':00', "openSetPage('day')")+
     menuRow(t('change_pin'), '\u2022\u2022\u2022\u2022', 'changePinFlow()')+
     menuRow(t('m_idle'), s.idleOff?t('sp_idle_never'):idleLabel(s.idleSeconds||60), "openSetPage('idle')")+
+    menuRow(t('m_uiscale'), Math.round((s.fontScale||1)*100)+'%', "openSetPage('scale')")+
     menuRow(t('m_cats_products'), st.products.length+' '+(st.products.length===1?t('m_product'):t('m_products')), 'openCategories()')+
     menuRow(t('m_cashflow'),t('m_cashflow_sub'), "openSetPage('cash')")+
     menuRow(t('m_updates'),t('m_version')+' '+APP_VERSION, "openSetPage('upd')")+
@@ -3970,6 +3975,13 @@ function renderSetPage(){
     h='<div class="card-box"><div class="label">'+t('m_version')+' '+APP_VERSION+'</div>'+
       '<button class="btn-full" style="background:var(--bg3);border-color:var(--gold);color:var(--gold2);" onclick="checkUpdate()">'+t('sp_check_updates')+'</button>'+
       '<div id="upd-status" class="hint" style="text-align:center;"></div></div>';
+  } else if(setPage==='scale'){
+    title=t('m_uiscale');
+    var pct=Math.round((s.fontScale||1)*100);
+    h='<div class="card-box"><div class="label">'+t('m_uiscale')+'</div>'+
+      '<input type="range" min="80" max="200" step="10" value="'+pct+'" id="scale-range" oninput="scaleRangeInput(this.value)" style="width:100%;">'+
+      '<div id="scale-val" style="text-align:center;color:var(--gold2);font-weight:700;font-size:1.3em;margin:10px 0;">'+pct+'%</div>'+
+      '<div class="hint">'+t('sp_uiscale_hint')+'</div></div>';
   } else if(setPage==='idle'){
     title=t('m_idle');
     var isecs=s.idleSeconds||60;

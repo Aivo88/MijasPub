@@ -1,5 +1,5 @@
 {
-  "version": "1.11.02",
-  "cache": "mijaspub-v19",
-  "notes": "PIN-koodin vaihdossa kentta nayttaa nyt vain numeronappaimiston. Appiversio: naytto pysyy paalla koko ajan (kioski)."
+  "version": "1.11.03",
+  "cache": "mijaspub-v20",
+  "notes": "Asetuksiin 'Fonttien ja nappien koko' -liukusaadin (80-200%), joka suurentaa koko appin (napit, fontit, valit) kerralla. PIN-koodin vaihtokentta nyt iso ja keskitetty. Molemmat pelkkia web-muutoksia -> tulevat Tarkista paivitykset -napilla ilman uutta APK:ta."
 }
