@@ -6,6 +6,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
+import android.content.ContentValues;
+import android.os.Build;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Base64;
+import android.webkit.JavascriptInterface;
 import android.webkit.ServiceWorkerClient;
 import android.webkit.ServiceWorkerController;
 import android.webkit.ValueCallback;
@@ -40,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
         web = new WebView(this);
         setContentView(web);
+        web.addJavascriptInterface(new MijasBridge(), "MijasBridge");
 
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
@@ -139,5 +146,41 @@ public class MainActivity extends AppCompatActivity {
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         web.restoreState(savedInstanceState);
+    }
+
+    // Silta jolla web-appi tallentaa tiedostot laitteen kansioihin.
+    public class MijasBridge {
+        @JavascriptInterface
+        public void saveBase64(String b64, String filename, String mime, String subdir) {
+            try {
+                byte[] data = Base64.decode(b64, Base64.DEFAULT);
+                String folder = "MijasPub";
+                if (subdir != null && !subdir.isEmpty()) folder = folder + "/" + subdir;
+
+                if (Build.VERSION.SDK_INT >= 29) {
+                    ContentValues cv = new ContentValues();
+                    cv.put(MediaStore.Downloads.DISPLAY_NAME, filename);
+                    cv.put(MediaStore.Downloads.MIME_TYPE, mime == null ? "application/octet-stream" : mime);
+                    cv.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/" + folder);
+                    android.net.Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
+                    if (uri == null) throw new Exception("no uri");
+                    java.io.OutputStream os = getContentResolver().openOutputStream(uri);
+                    os.write(data);
+                    os.close();
+                } else {
+                    java.io.File dir = new java.io.File(
+                            getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), folder);
+                    dir.mkdirs();
+                    java.io.File f = new java.io.File(dir, filename);
+                    java.io.FileOutputStream fos = new java.io.FileOutputStream(f);
+                    fos.write(data);
+                    fos.close();
+                }
+                final String msg = "Tallennettu: Download/" + folder + "/" + filename;
+                runOnUiThread(() -> android.widget.Toast.makeText(MainActivity.this, msg, android.widget.Toast.LENGTH_LONG).show());
+            } catch (Exception e) {
+                runOnUiThread(() -> android.widget.Toast.makeText(MainActivity.this, "Tallennus epaonnistui", android.widget.Toast.LENGTH_SHORT).show());
+            }
+        }
     }
 }
