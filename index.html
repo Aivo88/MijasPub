@@ -673,7 +673,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.11.01';
+var APP_VERSION = '1.11.02';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -1260,12 +1260,14 @@ function showConfirm(title,body,onOk,okLabel,okStyle){
   btn.onclick=function(){ closeModal('m-confirm'); onOk(); };
   openModal('m-confirm');
 }
-function askText(title,val,onOk,showFlag,titleKey){
+function askText(title,val,onOk,showFlag,titleKey,numeric){
   document.getElementById('mt-title').textContent=title;
   window._mtTitleKey = titleKey||null;
   var fr=document.getElementById('mt-flag-row');
   if(fr){ fr.style.display = showFlag?'':'none'; if(showFlag) updateAllFlags(); }
   var inp=document.getElementById('mt-input'); inp.value=val||'';
+  if(numeric){ inp.setAttribute('inputmode','numeric'); inp.setAttribute('pattern','[0-9]*'); inp.type='tel'; }
+  else { inp.removeAttribute('inputmode'); inp.removeAttribute('pattern'); inp.type='text'; }
   document.getElementById('mt-ok').onclick=function(){
     var v=inp.value.trim(); if(!v) return;
     window._mtTitleKey=null; closeModal('m-text'); onOk(v);
@@ -1741,7 +1743,7 @@ function changePinFlow(){
     if(!/^[0-9]{4}$/.test(v)){ toast(t('wrong_pin'),'err'); return; }
     var st=getState(); st.settings.pin=v;
     if(saveState(st)){ renderSettings(); toast(t('ts_pin_set'),'ok'); }
-  });
+  }, false, null, true);
 }
 /* ---------- IDLE AUTO-RETURN (60s) ---------- */
 var idleTimer=null;
