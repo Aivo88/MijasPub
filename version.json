@@ -1,5 +1,5 @@
 {
-  "version": "1.11.04",
-  "cache": "mijaspub-v21",
-  "notes": "PIN-koodin vaihtokentta: poistettu liian leveat valit numeroiden valilta (nyt siisti 1234), fonttia hieman pienennetty."
+  "version": "1.11.05",
+  "cache": "mijaspub-v22",
+  "notes": "Appissa tiedostojen tallennus toimii nyt: raportti-PDF:t menevat kansioon Download/MijasPub/Raportit ja varmuuskopiot kansioon Download/MijasPub/Varmuuskopiot. Vaatii uuden APK:n (Android-silta) + web-paivityksen."
 }

@@ -673,7 +673,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.11.04';
+var APP_VERSION = '1.11.05';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -3131,9 +3131,7 @@ function generateOpenTabsPDF(){
   headerLogoForPDF(st,function(logo){
     if(logo){ logo.x=50; logo.y=40; }
     var blob=new Blob([pdfBytes(buildPDF(L,logo))],{type:'application/pdf'});
-    var a=document.createElement('a');
-    a.href=URL.createObjectURL(blob); a.download=name;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    saveBlob(blob, name, 'Raportit');
     toast(t('ts_pdf_created'),'ok');
   });
 }
@@ -3269,9 +3267,7 @@ function generatePDF(){
     if(logo){ logo.x=50; logo.y=40; }
     var pdf=buildPDF(L, logo);
     var blob=new Blob([pdfBytes(pdf)],{type:'application/pdf'});
-    var a=document.createElement('a');
-    a.href=URL.createObjectURL(blob); a.download=name;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    saveBlob(blob, name, 'Raportit');
     toast(t('ts_pdf_created'),'ok');
   });
 }
@@ -3438,8 +3434,7 @@ function printDaily(){
   headerLogoForPDF(st,function(logo){
     if(logo){ logo.x=50; logo.y=40; }
     var blob=new Blob([pdfBytes(buildPDF(lines,logo))],{type:'application/pdf'});
-    var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    saveBlob(blob, name, 'Raportit');
     toast(t('ts_pdf_created'),'ok');
   });
 }
@@ -4120,16 +4115,31 @@ function bumpCols(d){
   st.settings.cols=Math.min(6,Math.max(2,st.settings.cols+d));
   if(saveState(st)){ applyAppearance(); renderSetPage(); }
 }
+// Appissa (MijasBridge) tallennetaan tiedosto suoraan laitteen kansioon;
+// selaimessa/PWA:ssa kaytetaan tavallista latausta.
+function saveBlob(blob, filename, subdir){
+  if(window.MijasBridge && MijasBridge.saveBase64){
+    var reader=new FileReader();
+    reader.onloadend=function(){
+      var res=''+reader.result; var b64=res.indexOf(',')>=0?res.split(',')[1]:res;
+      try{ MijasBridge.saveBase64(b64, filename, blob.type||'application/octet-stream', subdir||''); }
+      catch(e){ fallbackDownload(blob,filename); }
+    };
+    reader.readAsDataURL(blob);
+  } else { fallbackDownload(blob,filename); }
+}
+function fallbackDownload(blob,filename){
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
 function backupFilename(d){
   d=d||new Date();
   return d.getFullYear()+'.'+pad2(d.getMonth()+1)+'.'+pad2(d.getDate())+' Backup.json';
 }
 function downloadBackup(name){
   var blob=new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=name||backupFilename();
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  saveBlob(blob, name||backupFilename(), 'Varmuuskopiot');
 }
 function doBackup(){ downloadBackup(); toast(t('ts_backup_saved'),'ok'); }
 function pickRestoreFile(){ document.getElementById('restore-file').click(); }
