@@ -1,5 +1,5 @@
 {
-  "version": "1.11.00",
-  "cache": "mijaspub-v17",
-  "notes": "Paivaraportin kuukausi-tilassa kuukausivalitsin on nyt leveampi (nakyy kuluva kuukausi) ja vuosivalitsin kapeampi. Lisaksi appiversiossa Androidin navigointipalkki piilotetaan (kioskitila)."
+  "version": "1.11.01",
+  "cache": "mijaspub-v18",
+  "notes": "APK lataa nyt appin netista ja tallentaa sen laitteelle (service worker) -> toimii offline JA 'Tarkista paivitykset' -nappi tuo muutokset ilman uutta APK:ta. Paivitysviestit kaannetty. Sisaltaa myos: kuukausi/vuosi-valitsimet korjattu, Androidin navigointipalkki piiloon (kioskitila)."
 }

@@ -673,7 +673,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.11.00';
+var APP_VERSION = '1.11.01';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -830,6 +830,10 @@ var LANG={
   sp_other_income:{en:'+ Other income', fi:'+ Muu tulo', es:'+ Otro ingreso', de:'+ Sonstige Einnahme', sv:'+ \u00D6vrig int\u00E4kt'},
   sp_cash_hint:{en:'Money in or out of the till that is not tied to a customer tab. Both appear in History.', fi:'Kassaan tai kassasta liikkuva raha, joka ei liity asiakkaan piikkiin. Molemmat n\u00E4kyv\u00E4t historiassa.', es:'Dinero que entra o sale de la caja sin estar ligado a una cuenta de cliente. Ambos aparecen en el historial.', de:'Geld rein oder raus aus der Kasse, das nicht an einen Kundendeckel gebunden ist. Beide erscheinen im Verlauf.', sv:'Pengar in eller ut ur kassan som inte h\u00F6r till en kundnota. B\u00E5da visas i historiken.'},
   sp_check_updates:{en:'Check for updates', fi:'Tarkista p\u00E4ivitykset', es:'Buscar actualizaciones', de:'Nach Updates suchen', sv:'S\u00F6k efter uppdateringar'},
+  upd_offline:{en:'You are offline. Connect to the internet first.', fi:'Ei verkkoyhteytt\u00E4. Yhdist\u00E4 nettiin ensin.', es:'Sin conexi\u00F3n. Con\u00E9ctate a internet primero.', de:'Offline. Bitte zuerst mit dem Internet verbinden.', sv:'Ingen anslutning. Anslut till internet f\u00F6rst.'},
+  upd_checking:{en:'Checking...', fi:'Tarkistetaan...', es:'Comprobando...', de:'Wird gepr\u00FCft...', sv:'Kontrollerar...'},
+  upd_latest:{en:'You already have the latest version ({a}).', fi:'Sinulla on jo uusin versio ({a}).', es:'Ya tienes la \u00FAltima versi\u00F3n ({a}).', de:'Du hast bereits die neueste Version ({a}).', sv:'Du har redan den senaste versionen ({a}).'},
+  upd_found:{en:'Version {a} found \u2014 installing...', fi:'Versio {a} l\u00F6ytyi \u2014 asennetaan...', es:'Versi\u00F3n {a} encontrada \u2014 instalando...', de:'Version {a} gefunden \u2014 wird installiert...', sv:'Version {a} hittades \u2014 installerar...'},
   sp_backup_reset:{en:'Backup & reset', fi:'Varmuuskopio ja nollaus', es:'Copia y reinicio', de:'Sicherung & Zur\u00FCcksetzen', sv:'S\u00E4kerhetskopia & \u00E5terst\u00E4llning'},
   sp_backup:{en:'Backup', fi:'Varmuuskopio', es:'Copia de seguridad', de:'Sicherung', sv:'S\u00E4kerhetskopia'},
   sp_save_backup:{en:'Save backup', fi:'Tallenna varmuuskopio', es:'Guardar copia', de:'Sicherung speichern', sv:'Spara s\u00E4kerhetskopia'},
@@ -4264,21 +4268,21 @@ function checkUpdate(){
   var el=document.getElementById('upd-status');
   if(!el) return;
   if(!navigator.onLine){
-    el.textContent='You are offline. Connect to the internet first.';
+    el.textContent=t('upd_offline');
     el.style.color='var(--red)'; return;
   }
-  el.textContent='Checking...'; el.style.color='var(--text3)';
+  el.textContent=t('upd_checking'); el.style.color='var(--text3)';
   fetch('version.json?ts='+Date.now(),{cache:'no-store'})
     .then(function(r){ return r.json(); })
     .then(function(info){
       var remote=info && info.version;
       if(!remote){ el.textContent=t('err_no_version'); el.style.color='var(--red)'; return; }
       if(remote===APP_VERSION){
-        el.textContent='You already have the latest version ('+APP_VERSION+').';
+        el.textContent=t('upd_latest').replace('{a}',APP_VERSION);
         el.style.color='var(--text3)';
         return;
       }
-      el.textContent='Version '+remote+' found \u2014 installing...';
+      el.textContent=t('upd_found').replace('{a}',remote);
       el.style.color='var(--green)';
       applyUpdate();
     })
