@@ -1,7 +1,7 @@
 name: Build MijasPub APK
 
 on:
-  workflow_dispatch:        # aja käsin GitHubin Actions-välilehdeltä
+  workflow_dispatch:
   push:
     paths:
       - 'index.html'
@@ -31,6 +31,12 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Restore signing keystore
+        run: |
+          echo "MIIKZgIBAzCCChAGCSqGSIb3DQEHAaCCCgEEggn9MIIJ+TCCBcAGCSqGSIb3DQEHAaCCBbEEggWtMIIFqTCCBaUGCyqGSIb3DQEMCgECoIIFQDCCBTwwZgYJKoZIhvcNAQUNMFkwOAYJKoZIhvcNAQUMMCsEFJUKeacMv7uahjTxmEssati0DDo0AgInEAIBIDAMBggqhkiG9w0CCQUAMB0GCWCGSAFlAwQBKgQQ987bq2vFGSMKs+MFQlQFSgSCBNDMQofjICjfQF1NgwOOgRe5GcGDjnpvNkKMSB+5rsor22WxWG1H2+n8GhwLVjAGMceyEnmpWpjSJJzzsiI6XkQ+r+LTjIpGJUDTVu2lJIEb33EoYdPVnNqraaoDboTx4Lx+qQUUai0k65jj4xucAs/KhM5SJ2FcuD4jQ+xOvhLMKS0m7MYAidaTo1ZAu1v63YM2zsHy96m99cwEpIKJxnrOnE0ZPDyvBj9PuvUipBih7tIz6JdN65g5TKbWxGK0rAWadUHSitJBMfSWTfX7NegmK9Je6qVk9NNRDEwFHNjPMMzSGV2hlJOnVPlRQAiHMBcUt0My+B/RytfyG+v38PZ6oA0XP/vfhT6S4DL3FyT3ArVR7g1PcAv4h+TwmvSllgi8+jq4CJ5Lj66X4csizqTqegAGHJhPcZZc/QxNd5wIASG3afSCdv6Pm6d2VhrH6PA2FoxEO4a/wykptuzH6vZdra+yjoH8nDLz8mHDTtApW/DnZt/7Ntwuh7CMOR+lpsrUgf6KOl7ne3OLhwn59IdRDwCA2SH2vhKXUmviFnePri3zDd+UtLTg/UkziP60Rc4fxFmUEA1t0OiqFTDx0bAR4/77f4a2J5qgb+zrqjakehWm4v6f32092h3fP6ZQbfuxYSkCe/tiBgqdjh6CPjL0s4uan3DzIkkY8ExNOiLFUzzbbTsBdKnWf1OqIqaBf3PQX1slBV7W4A0QRABe8tiy2KKi0tQasm0Ao3owonpMULfpsypQBZkRDe8jc5k4Ipk2o7rYo74Mik//lJWiQHfoPIY3e7vQ/FCrA6ZrbK8AQUA4FwmxNv8aFI8XCII8OFJYO87cHH2KdyaaL4+3nAOWcy80NB72NnB2Ibh6ZnYwnAvnKU81Fqv1Mim5ZI1Bqhcgn3zAYveGHhcoRTH+RgjEDKPZN3hPjH8LMM7lLw+/BUGqMhVTbWolJoU7tWCRQTe5zQ00+dMlnxW0wTPSOrEpmBAN8B8LOYtkZeqG68ForzsJyFinQLuh+Q+vXY/uVn66k4Sj1Ku/6SMnTkR3Iqwc7gFkDBL/vuTTgAgvyjEeCmDtv4gKgviP5pBmYsMWP3egSdPSMgSY2iuksyPo9XRxr3VPttCYsrwR/08pCz2pYji+zkHao4q1sxSx7ukaBB+MbCKCn0+R34HWBxpToS7qUBDx2ydD5gUeTqRibcq2/LQNy44AMOtCz+WiXYoFDZtjpX//h8pIj05RFjeXzQh3X610fetB2wxq24g15KqikzNeFV6tb7WOyybBLgzv/a4ZfBsU3uimmy+uwqOqAEm5vwazOC5CQoeklprTkCgY4dYN7N83abCQh3sE+f/VRSVnCirbGz9FcMTOLTyapyR8WZrn8EAxeIYV629ny1J1w765DzBInHIMC/baCbSjnTLA9xJWQ58PDxDDH0EjGx1xNNkUQffQIQTvpY2UZP/eO8zs6N9YM6Dg5VCzNKqzgfNx1erHe8c8jmOi1UK5ho8c1vQSh2WXi6jcN+qMKWHo7Sx9/fYPVPE09eg9dE/SYkAiy2A4RqLkLGwnG3ajU6Ob11aHU/rNxemDDHWBCPjZOvtIyICG3zVr3fs/8r6szP+eac28Dykl77mzZ2ecUe1/4qwreMe9mmnEJIaJYDkr5TFSMC0GCSqGSIb3DQEJFDEgHh4AYQBuAGQAcgBvAGkAZABkAGUAYgB1AGcAawBlAHkwIQYJKoZIhvcNAQkVMRQEElRpbWUgMTc4NzMxODc2NjEwMTCCBDEGCSqGSIb3DQEHBqCCBCIwggQeAgEAMIIEFwYJKoZIhvcNAQcBMGYGCSqGSIb3DQEFDTBZMDgGCSqGSIb3DQEFDDArBBQ5wdaDXMsvscJPk4EABtiA8lqdsQICJxACASAwDAYIKoZIhvcNAgkFADAdBglghkgBZQMEASoEEBD3ktnM68RzwKcSlsh+Jo6AggOgWq9j81pSrRoHPcTgYXxO5cgA7HJWXjrtZ/GAQmQq/4rkSxeuzBn0P6MRk63xR8fbY51h12EHrCKhesVhwAKyBwZGG4zTVO8q8n+QV6kA/9aT0CKpUSyEwkD6ZH7GtGSXyWYmbXScyoy4E/4+QjU3lrh9p3PvjiehT/NbpIt0b6puuHBZGkG3+2ltxVX7JdYJrCRbmQKoWpnsE8H9TLi3nRtzS35XcVWhgAW5HLob197H9D/1PgRinkIEjPeRixe4OcVmjtWfqo32I2DdJ9v/5kD+6LqM3mIKOVuiAlBG9mSpJdX+Pjl82A2m5si/DYqc6EjLP9UysEPUR50tRa+hVrzXJ9bBKCE+l38bd6TJC1SZXJEk3XNmmCnYOPyVboW9etCRrp4LDKdTMJ5VsjZT1EXOBMcWQuMq/ng+UCUvAlHB0TzHNXdbQU0Gfva5CRQmn/ltGHLU+iQNOcpozrKmF1iaF7liEtO6xTMzQGMyER8ZjFekDX0WaH/0DedP2JFxBWTjI8KtzNGxz3gOeutf8EWQU1ovdGch1fI7KuXTdtjTvc2/HsQ6pkzH0t9b4CG1ybvTWGFUs3djT+JSICaJLNvIKuIuGxoYZzJlLB9efBs7bN5tKlXdHK4VcnCzzr3V5+hQcy7eFeTSUWxIJx+iYMmiVYBRjn6ZlK6w/GAY7DoufBgaHkrN+561RgNa2rT7XjlaekYAwWH+/LFdjwsJdaprH7fLfzPB0MaY0FqSWAE7QCN/bym+imN+fluLd8A4WHrLpi0+i1RiC7vgPQ8ROAsmJQc+OZvuwNMq8cSEiebLQo4xsDmVwXTX4khJethR5VlKLw7GYjQ+wzJtBuTYX4f5o1KVaFkgSmU+WpNqSBW8uEzCqI3vehBiQZIEQYDFWRFb3ZeH9TMh90Tzx53q0JNRER6pgyqPG68SYWp9Pg347HoFqKJcYotzyY1C2m/yB3rJUC1ZlPvqFVv5eWXm5VYXkvA+wYMe9bG6mFZscXSvpJOQ6Vu6tZGYbkap20auzrVnwZyzh3J3M/XWB3MQvNaQ0ZolkkEQQKN9JGUvV8ElYPX8E1cQN+lWIl/dr8zZvisC+oQanFIsHjmCTPgTDQ9ZdI75His8vVbOX8EPqabYs0CUNoxb22W5zUwyUZNKeHf5waPf0AXhvd+T224IaoG+BZtew05BW4fk2Av45xPqKsep6xcaIOqc85j1WdtYHl9Pm5orUyV8T5me6GrNzjBNMDEwDQYJYIZIAWUDBAIBBQAEIEA/6NyyRz+YaaNtdE7aTbVG7ZKmuU1G+ee4z0EQiF+uBBQYWLl4VTSVkhe/cyw1UChE5hBo1AICJxA=" > /tmp/ks.b64
+          base64 -d /tmp/ks.b64 > android/app/debug.keystore
+          ls -la android/app/debug.keystore
+
       - name: Generate launcher icons from icon-512.png
         run: |
           sudo apt-get update && sudo apt-get install -y imagemagick
@@ -41,13 +47,12 @@ jobs:
             convert icon-512.png -resize ${2}x${2} "$dir/ic_launcher.png"
             cp "$dir/ic_launcher.png" "$dir/ic_launcher_round.png"
           done
-          ls -R android/app/src/main/res/mipmap-*
 
       - name: Bundle web app into APK assets
         run: |
           mkdir -p android/app/src/main/assets
           cp index.html sw.js manifest.json version.json bg.jpg icon-192.png icon-512.png header-default.png android/app/src/main/assets/
-          echo "Bundled files:"; ls -la android/app/src/main/assets/
+          ls -la android/app/src/main/assets/
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
