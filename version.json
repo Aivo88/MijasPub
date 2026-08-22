@@ -1,5 +1,5 @@
 {
-  "version": "1.10.01",
-  "cache": "mijaspub-v16",
-  "notes": "Hienosaato: (1) Asiakkaiden nimet niminappien sisalla viela isommat. (2) PIN-koodin numerot keskitetty nappien keskelle."
+  "version": "1.11.00",
+  "cache": "mijaspub-v17",
+  "notes": "Paivaraportin kuukausi-tilassa kuukausivalitsin on nyt leveampi (nakyy kuluva kuukausi) ja vuosivalitsin kapeampi. Lisaksi appiversiossa Androidin navigointipalkki piilotetaan (kioskitila)."
 }
