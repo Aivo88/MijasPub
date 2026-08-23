@@ -1,5 +1,5 @@
 {
-  "version": "1.12.00",
-  "cache": "mijaspub-v23",
-  "notes": "Tiedostot: paakansio SaunaMijas; raha-raportit -> SaunaMijas/Cashregister (Cashregister 2026.08.22.pdf), tuoteraportit -> SaunaMijas/Products (Products 2026.08.22.pdf), varmuuskopiot -> SaunaMijas/Backups (Backup 2026.08.22.json). Raportin otsikko nyt Sauna Mijas (ei Pub). Tuoteraportin tuotenimet kaantyvat valitulle raporttikielelle. Paivaraporttiin selitys tuotteiden rastituksesta (kaikilla kielilla). Vaatii uuden APK:n."
+  "version": "1.12.01",
+  "cache": "mijaspub-v24",
+  "notes": "Tuoteraportti: maksamattomat (avoimet piikit) eivat enaa nay raportissa oletuksena - vain maksetut lasketaan. Lisatty 'Sisallyta avoimet piikit' -valinta jos ne halutaan mukaan. Pelkka web-muutos (Tarkista paivitykset -napilla)."
 }

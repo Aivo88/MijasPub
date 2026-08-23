@@ -673,7 +673,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.12.00';
+var APP_VERSION = '1.12.01';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -3304,11 +3304,16 @@ function stepProdMonth(dir){
 }
 /* Product lines from tab orders (items[]) and walk-in sales, within the current
    month filter. Custom charges are folded into one "Custom" line. */
-function productTotals(txs){
+function productTotals(txs, includeOpen){
+  var _st=getState(), _openIds={};
+  if(includeOpen!==true){
+    _st.customers.forEach(function(c){ if(balanceOf(_st,c.id) < -0.001) _openIds[c.id]=true; });
+  }
   var map={}, custom={qty:0,sum:0};
   txs.forEach(function(t){
     if(t.type!=='debt' && t.type!=='pay') return;
     if(!t.items || !t.items.length){ return; }
+    if(includeOpen!==true && _openIds[t.customerId||'?']) return;
     t.items.forEach(function(it){
       if(it.name==='Custom'){ custom.qty+=(it.qty||1); custom.sum+=(it.price*(it.qty||1)); return; }
       var key = it.id || ('n:'+it.name);
@@ -3331,7 +3336,7 @@ function filteredTxs(st){
 }
 function renderTopSellers(){
   var st=getState();
-  var rows=productTotals(filteredTxs(st));
+  var rows=productTotals(filteredTxs(st, true));
   var body=prodMonthBar('stepProdMonth');
   if(!rows.length){ body+='<div class="empty-hint">No sales in this period.</div>'; }
   else{
@@ -3344,7 +3349,7 @@ function renderTopSellers(){
   }
   document.getElementById('prod-report-body').innerHTML=body;
 }
-var dailyExcluded={}, dailyRows=[], dailyDate=null, dailyLang=null, dailyMode='day', dailyMonth=null, dailyYear=null;
+var dailyExcluded={}, dailyRows=[], dailyDate=null, dailyLang=null, dailyMode='day', dailyMonth=null, dailyYear=null, dailyIncludeOpen=false;
 function dailyFilteredTxs(st){
   if(dailyMode==='all') return st.transactions.slice();
   if(dailyMode==='month'){
@@ -3363,7 +3368,7 @@ function renderProdDaily(){
   if(dailyDate===null) dailyDate=todayBarDate();
   if(dailyLang===null) dailyLang=curLang();
   if(dailyMonth===null){ var n0=new Date(); dailyMonth=n0.getMonth(); dailyYear=n0.getFullYear(); }
-  dailyRows=productTotals(dailyFilteredTxs(st));
+  dailyRows=productTotals(dailyFilteredTxs(st), dailyIncludeOpen);
   function modeBtn(m,lbl){ return '<button class="tab'+(dailyMode===m?' active':'')+'" onclick="setDailyMode(\''+m+'\')">'+lbl+'</button>'; }
   var modeBar='<div class="tabs" style="margin-bottom:0.6em;">'+modeBtn('day',t('range_day'))+modeBtn('month',t('range_month'))+modeBtn('all',t('range_all'))+'</div>';
   var picker='';
@@ -3384,7 +3389,8 @@ function renderProdDaily(){
   var langSel='<div class="row" style="justify-content:space-between;margin-bottom:0.7em;"><div style="align-self:center;">'+t('report_language')+'</div>'+
     '<select id="daily-lang" onchange="dailyLang=this.value" style="background:var(--bg3);color:var(--gold2);border:1px solid var(--gold);border-radius:8px;padding:8px;">'+
     LANGS.map(function(L){ return '<option value="'+L[0]+'"'+(dailyLang===L[0]?' selected':'')+'>'+L[1]+'</option>'; }).join('')+'</select></div>';
-  var body=modeBar+picker+langSel;
+  var openBtn='<button class="btn-full" style="margin-bottom:0.7em;'+(dailyIncludeOpen?'border-color:var(--gold);color:var(--gold2);':'')+'" onclick="toggleDailyOpen()">'+(dailyIncludeOpen?'\u2713 ':'')+t('include_open_tabs')+'</button>';
+  var body=modeBar+picker+langSel+openBtn;
   if(!dailyRows.length){ body+='<div class="empty-hint">'+t('no_sales_today')+'</div>'; }
   else{
     body+='<div class="hint" style="margin-bottom:0.6em;">'+t('daily_pick_hint')+'</div>';
@@ -3400,6 +3406,7 @@ function renderProdDaily(){
   document.getElementById('prod-report-body').innerHTML=body;
 }
 function setDailyMode(m){ dailyMode=m; renderProdDaily(); }
+function toggleDailyOpen(){ dailyIncludeOpen=!dailyIncludeOpen; renderProdDaily(); }
 function pickDailyMonth(){ var m=document.getElementById('daily-month'), y=document.getElementById('daily-year'); if(m) dailyMonth=parseInt(m.value,10); if(y) dailyYear=parseInt(y.value,10); renderProdDaily(); }
 function stepDaily(dir){ var st=getState(); var base=new Date(dailyDate); base.setDate(base.getDate()+dir); base.setHours(12,0,0,0); var nd=computeBarDate(base.getTime(), st.settings.dayEnd); if(nd>todayBarDate()) return; dailyDate=nd; renderProdDaily(); }
 function pickDailyDate(val){ if(!val) return; var st=getState(); var d=new Date(val+'T12:00:00'); dailyDate=computeBarDate(d.getTime(), st.settings.dayEnd); if(dailyDate>todayBarDate()) dailyDate=todayBarDate(); renderProdDaily(); }
