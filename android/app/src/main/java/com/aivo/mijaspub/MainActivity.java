@@ -10,6 +10,7 @@ import android.content.ContentValues;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.speech.RecognizerIntent;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
 import android.webkit.ServiceWorkerClient;
@@ -27,11 +28,16 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
 
     private WebView web;
     private ValueCallback<Uri[]> filePathCallback;
     private ActivityResultLauncher<Intent> fileChooser;
+    private ActivityResultLauncher<Intent> voiceLauncher;
 
     // Ladataan appi netista; service worker tallentaa sen laitteelle offline-kayttoon.
     private static final String START_URL = "https://aivo88.github.io/MijasPub/";
@@ -80,6 +86,19 @@ public class MainActivity extends AppCompatActivity {
                     }
                     filePathCallback.onReceiveValue(out);
                     filePathCallback = null;
+                });
+
+        voiceLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    String text = "";
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        ArrayList<String> r = result.getData().getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                        if (r != null && !r.isEmpty()) text = r.get(0);
+                    }
+                    final String tt = text;
+                    web.post(() -> web.evaluateJavascript(
+                            "window.__onVoiceResult && window.__onVoiceResult(" + JSONObject.quote(tt) + ")", null));
                 });
 
         web.setWebChromeClient(new WebChromeClient() {
@@ -180,6 +199,22 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception e) {
                 runOnUiThread(() -> android.widget.Toast.makeText(MainActivity.this, "Tallennus epaonnistui", android.widget.Toast.LENGTH_SHORT).show());
             }
+        }
+
+        @JavascriptInterface
+        public void startVoice(String locale) {
+            runOnUiThread(() -> {
+                try {
+                    Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                    intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                    if (locale != null && !locale.isEmpty()) {
+                        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, locale);
+                    }
+                    voiceLauncher.launch(intent);
+                } catch (Exception e) {
+                    android.widget.Toast.makeText(MainActivity.this, "Puheentunnistus ei kaytettavissa", android.widget.Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 }
