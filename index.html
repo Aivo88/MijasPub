@@ -673,7 +673,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.11.05';
+var APP_VERSION = '1.12.00';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -701,6 +701,7 @@ var LANG={
   range_day:{en:'Day',fi:'P\u00E4iv\u00E4',es:'D\u00EDa',de:'Tag',sv:'Dag'},
   range_month:{en:'Month',fi:'Kuukausi',es:'Mes',de:'Monat',sv:'M\u00E5nad'},
   range_all:{en:'All time',fi:'Koko aika',es:'Todo',de:'Gesamt',sv:'Hela tiden'},
+  daily_pick_hint:{en:'Tick the products you want to include in the printout.',fi:'Rastita ne tuotteet jotka haluat mukaan tulosteeseen.',es:'Marca los productos que quieres incluir en la impresi\u00F3n.',de:'W\u00E4hle die Produkte aus, die gedruckt werden sollen.',sv:'Kryssa i de produkter du vill ha med i utskriften.'},
   m_idle:{en:'Auto-return timer',fi:'Palautusajastin',es:'Temporizador de retorno',de:'R\u00FCckkehr-Timer',sv:'\u00C5tervändartimer'},
   m_uiscale:{en:'Font & button size',fi:'Fonttien ja nappien koko',es:'Tama\u00F1o de fuente y botones',de:'Schrift- und Buttongr\u00F6\u00DFe',sv:'Text- och knappstorlek'},
   sp_uiscale_hint:{en:'Scales the whole app up or down.',fi:'Suurentaa tai pienent\u00E4\u00E4 koko appia.',es:'Escala toda la aplicaci\u00F3n.',de:'Skaliert die gesamte App.',sv:'Skalar hela appen.'},
@@ -3092,9 +3093,8 @@ function openTabsAsOf(st,to){
    header or the default both fall back to Pub. */
 function reportTitle(st){
   var t=st.settings.headerText;
-  if(st.settings.headerImage) return 'Pub';
   if(typeof t==='string'){ t=t.trim(); if(t && t!=='Pub') return t; }
-  return 'Pub';
+  return 'Sauna Mijas';
 }
 function generateOpenTabsPDF(){
   var st=getState();
@@ -3127,11 +3127,11 @@ function generateOpenTabsPDF(){
     L.push({text:pdfT('total_owed',plang),x:50,y:y,size:12,bold:true});
     L.push({text:money(tot),x:360,y:y,size:12,bold:true});
   }
-  var name=pdfT('open_tabs_file',plang)+' '+isoDate(now)+'.pdf';
+  var name='Cashregister '+dotDate(now)+'.pdf';
   headerLogoForPDF(st,function(logo){
     if(logo){ logo.x=50; logo.y=40; }
     var blob=new Blob([pdfBytes(buildPDF(L,logo))],{type:'application/pdf'});
-    saveBlob(blob, name, 'Raportit');
+    saveBlob(blob, name, 'SaunaMijas/Cashregister');
     toast(t('ts_pdf_created'),'ok');
   });
 }
@@ -3262,12 +3262,12 @@ function generatePDF(){
     }
   }
 
-  var name=pdfT('sales_file',lang)+' '+isoDate(expFrom)+' - '+isoDate(expTo)+'.pdf';
+  var name='Cashregister '+dotDate(expFrom)+' - '+dotDate(expTo)+'.pdf';
   headerLogoForPDF(st,function(logo){
     if(logo){ logo.x=50; logo.y=40; }
     var pdf=buildPDF(L, logo);
     var blob=new Blob([pdfBytes(pdf)],{type:'application/pdf'});
-    saveBlob(blob, name, 'Raportit');
+    saveBlob(blob, name, 'SaunaMijas/Cashregister');
     toast(t('ts_pdf_created'),'ok');
   });
 }
@@ -3387,6 +3387,7 @@ function renderProdDaily(){
   var body=modeBar+picker+langSel;
   if(!dailyRows.length){ body+='<div class="empty-hint">'+t('no_sales_today')+'</div>'; }
   else{
+    body+='<div class="hint" style="margin-bottom:0.6em;">'+t('daily_pick_hint')+'</div>';
     body+=dailyRows.map(function(r,i){
       var on=!dailyExcluded[r.name];
       return '<div class="row"><button class="row-main" style="background:none;border:none;text-align:left;cursor:pointer;color:inherit;" onclick="toggleDaily('+i+')">'+
@@ -3406,6 +3407,9 @@ function toggleDaily(i){ var r=dailyRows[i]; if(!r) return; if(dailyExcluded[r.n
 function printDaily(){
   var st=getState(), lang=dailyLang||curLang();
   var rows=dailyRows.filter(function(r){ return !dailyExcluded[r.name]; });
+  var _rst=getState();
+  function _pById(id){ for(var k=0;k<_rst.products.length;k++){ if(_rst.products[k].id===id) return _rst.products[k]; } return null; }
+  function _nameL(r){ if(r.id){ var p=_pById(r.id); if(p){ var nm=p.names||{}; return nm[lang]||nm.fi||r.name; } } return r.name; }
   var LBL={ title:{fi:'Tuoteraportti',en:'Product report',es:'Informe de productos',de:'Produktbericht',sv:'Produktrapport'},
             product:{fi:'Tuote',en:'Product',es:'Producto',de:'Produkt',sv:'Produkt'},
             pcs:{fi:'kpl',en:'pcs',es:'uds',de:'Stk',sv:'st'},
@@ -3422,19 +3426,19 @@ function printDaily(){
   lines.push({text:L('total'),x:430,y:y,size:11,bold:true}); y+=16;
   var gTot=0,gQty=0;
   rows.forEach(function(r){ if(y>800) return; gTot+=r.sum; gQty+=r.qty;
-    lines.push({text:r.name,x:50,y:y,size:10});
+    lines.push({text:_nameL(r),x:50,y:y,size:10});
     lines.push({text:String(r.qty),x:340,y:y,size:10});
     lines.push({text:money(r.sum),x:430,y:y,size:10}); y+=15; });
   y+=8;
   lines.push({text:L('total'),x:50,y:y,size:12,bold:true});
   lines.push({text:String(gQty),x:340,y:y,size:12,bold:true});
   lines.push({text:money(gTot),x:430,y:y,size:12,bold:true});
-  var fnameRange = dailyMode==='all' ? 'all' : (dailyMode==='month' ? (dailyYear+'-'+pad2(dailyMonth+1)) : isoDate(new Date(dailyDate)));
-  var name=L('title')+' '+fnameRange+'.pdf';
+  var fnameRange = dailyMode==='all' ? 'all' : (dailyMode==='month' ? (dailyYear+'.'+pad2(dailyMonth+1)) : dotDate(new Date(dailyDate)));
+  var name='Products '+fnameRange+'.pdf';
   headerLogoForPDF(st,function(logo){
     if(logo){ logo.x=50; logo.y=40; }
     var blob=new Blob([pdfBytes(buildPDF(lines,logo))],{type:'application/pdf'});
-    saveBlob(blob, name, 'Raportit');
+    saveBlob(blob, name, 'SaunaMijas/Products');
     toast(t('ts_pdf_created'),'ok');
   });
 }
@@ -4133,13 +4137,14 @@ function fallbackDownload(blob,filename){
   a.href=URL.createObjectURL(blob); a.download=filename;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
+function dotDate(d){ d=d||new Date(); return d.getFullYear()+'.'+pad2(d.getMonth()+1)+'.'+pad2(d.getDate()); }
 function backupFilename(d){
   d=d||new Date();
-  return d.getFullYear()+'.'+pad2(d.getMonth()+1)+'.'+pad2(d.getDate())+' Backup.json';
+  return 'Backup '+dotDate(d)+'.json';
 }
 function downloadBackup(name){
   var blob=new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});
-  saveBlob(blob, name||backupFilename(), 'Varmuuskopiot');
+  saveBlob(blob, name||backupFilename(), 'SaunaMijas/Backups');
 }
 function doBackup(){ downloadBackup(); toast(t('ts_backup_saved'),'ok'); }
 function pickRestoreFile(){ document.getElementById('restore-file').click(); }

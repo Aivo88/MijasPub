@@ -1,5 +1,5 @@
 {
-  "version": "1.11.05",
-  "cache": "mijaspub-v22",
-  "notes": "Appissa tiedostojen tallennus toimii nyt: raportti-PDF:t menevat kansioon Download/MijasPub/Raportit ja varmuuskopiot kansioon Download/MijasPub/Varmuuskopiot. Vaatii uuden APK:n (Android-silta) + web-paivityksen."
+  "version": "1.12.00",
+  "cache": "mijaspub-v23",
+  "notes": "Tiedostot: paakansio SaunaMijas; raha-raportit -> SaunaMijas/Cashregister (Cashregister 2026.08.22.pdf), tuoteraportit -> SaunaMijas/Products (Products 2026.08.22.pdf), varmuuskopiot -> SaunaMijas/Backups (Backup 2026.08.22.json). Raportin otsikko nyt Sauna Mijas (ei Pub). Tuoteraportin tuotenimet kaantyvat valitulle raporttikielelle. Paivaraporttiin selitys tuotteiden rastituksesta (kaikilla kielilla). Vaatii uuden APK:n."
 }
