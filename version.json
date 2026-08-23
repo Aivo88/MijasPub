@@ -1,5 +1,5 @@
 {
-  "version": "1.12.01",
-  "cache": "mijaspub-v24",
-  "notes": "Tuoteraportti: maksamattomat (avoimet piikit) eivat enaa nay raportissa oletuksena - vain maksetut lasketaan. Lisatty 'Sisallyta avoimet piikit' -valinta jos ne halutaan mukaan. Pelkka web-muutos (Tarkista paivitykset -napilla)."
+  "version": "1.12.02",
+  "cache": "mijaspub-v25",
+  "notes": "Uuteen asiakas -ikkunaan iso mikrofoninappi (Sanele) Peruuta-napin alle - kayttaa tabletin puheentunnistusta ja tayttaa nimen valitulla kielella. Vaatii uuden APK:n (Android-silta)."
 }

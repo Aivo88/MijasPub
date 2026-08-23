@@ -629,6 +629,7 @@ input:focus,select:focus{border-color:var(--gold);}
     <div class="field"><input type="text" id="mt-input" autocomplete="off"></div>
     <button class="btn-full" style="background:var(--gbg);border-color:var(--green);color:var(--green);margin-bottom:0.6em;" id="mt-ok">OK</button>
     <button class="btn-modal-cancel" onclick="closeModal('m-text')" data-t="cancel">Cancel</button>
+    <button id="mt-voice" onclick="startVoiceInput()" style="display:none;width:100%;min-height:90px;margin-top:0.8em;background:var(--bg3);border:1.6px solid var(--gold);border-radius:12px;color:var(--gold2);font-size:1.1em;cursor:pointer;">\uD83C\uDFA4<div style="font-size:0.85em;margin-top:2px;" data-t="voice_dictate">Dictate</div></button>
   </div>
 </div>
 
@@ -673,7 +674,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.12.01';
+var APP_VERSION = '1.12.02';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -702,6 +703,8 @@ var LANG={
   range_month:{en:'Month',fi:'Kuukausi',es:'Mes',de:'Monat',sv:'M\u00E5nad'},
   range_all:{en:'All time',fi:'Koko aika',es:'Todo',de:'Gesamt',sv:'Hela tiden'},
   daily_pick_hint:{en:'Tick the products you want to include in the printout.',fi:'Rastita ne tuotteet jotka haluat mukaan tulosteeseen.',es:'Marca los productos que quieres incluir en la impresi\u00F3n.',de:'W\u00E4hle die Produkte aus, die gedruckt werden sollen.',sv:'Kryssa i de produkter du vill ha med i utskriften.'},
+  voice_dictate:{en:'Dictate',fi:'Sanele',es:'Dictar',de:'Diktieren',sv:'Diktera'},
+  voice_unavailable:{en:'Voice input not available', fi:'Puheentunnistus ei k\u00E4ytett\u00E4viss\u00E4', es:'Dictado no disponible', de:'Spracheingabe nicht verf\u00FCgbar', sv:'R\u00F6stinmatning ej tillg\u00E4nglig'},
   m_idle:{en:'Auto-return timer',fi:'Palautusajastin',es:'Temporizador de retorno',de:'R\u00FCckkehr-Timer',sv:'\u00C5tervändartimer'},
   m_uiscale:{en:'Font & button size',fi:'Fonttien ja nappien koko',es:'Tama\u00F1o de fuente y botones',de:'Schrift- und Buttongr\u00F6\u00DFe',sv:'Text- och knappstorlek'},
   sp_uiscale_hint:{en:'Scales the whole app up or down.',fi:'Suurentaa tai pienent\u00E4\u00E4 koko appia.',es:'Escala toda la aplicaci\u00F3n.',de:'Skaliert die gesamte App.',sv:'Skalar hela appen.'},
@@ -1263,11 +1266,32 @@ function showConfirm(title,body,onOk,okLabel,okStyle){
   btn.onclick=function(){ closeModal('m-confirm'); onOk(); };
   openModal('m-confirm');
 }
+var VOICE_LOC={fi:'fi-FI',en:'en-US',es:'es-ES',de:'de-DE',sv:'sv-SE'};
+window.__onVoiceResult=function(txt){
+  txt=(''+(txt||'')).trim();
+  if(!txt) return;
+  txt=txt.charAt(0).toUpperCase()+txt.slice(1);
+  var inp=document.getElementById('mt-input'); if(inp){ inp.value=txt; try{ inp.focus(); }catch(e){} }
+};
+function startVoiceInput(){
+  var loc=VOICE_LOC[curLang()]||'fi-FI';
+  if(window.MijasBridge && MijasBridge.startVoice){ try{ MijasBridge.startVoice(loc); return; }catch(e){} }
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(SR){
+    try{
+      var r=new SR(); r.lang=loc; r.interimResults=false; r.maxAlternatives=1;
+      r.onresult=function(ev){ window.__onVoiceResult(ev.results[0][0].transcript); };
+      r.start(); return;
+    }catch(e){}
+  }
+  toast(t('voice_unavailable'),'err');
+}
 function askText(title,val,onOk,showFlag,titleKey,numeric){
   document.getElementById('mt-title').textContent=title;
   window._mtTitleKey = titleKey||null;
   var fr=document.getElementById('mt-flag-row');
   if(fr){ fr.style.display = showFlag?'':'none'; if(showFlag) updateAllFlags(); }
+  var vb=document.getElementById('mt-voice'); if(vb){ vb.style.display = showFlag?'':'none'; }
   var inp=document.getElementById('mt-input'); inp.value=val||'';
   if(numeric){ inp.setAttribute('inputmode','numeric'); inp.setAttribute('pattern','[0-9]*'); inp.type='tel'; inp.style.fontSize='1.7em'; inp.style.textAlign='center'; inp.style.letterSpacing='normal'; inp.style.fontWeight='700'; inp.style.padding='0.35em'; }
   else { inp.removeAttribute('inputmode'); inp.removeAttribute('pattern'); inp.type='text'; inp.style.fontSize=''; inp.style.textAlign=''; inp.style.letterSpacing=''; inp.style.fontWeight=''; inp.style.padding=''; }
