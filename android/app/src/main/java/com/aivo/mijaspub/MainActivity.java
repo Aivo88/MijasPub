@@ -154,8 +154,7 @@ public class MainActivity extends AppCompatActivity {
         public void saveBase64(String b64, String filename, String mime, String subdir) {
             try {
                 byte[] data = Base64.decode(b64, Base64.DEFAULT);
-                String folder = "MijasPub";
-                if (subdir != null && !subdir.isEmpty()) folder = folder + "/" + subdir;
+                String folder = (subdir == null || subdir.isEmpty()) ? "SaunaMijas" : subdir;
 
                 if (Build.VERSION.SDK_INT >= 29) {
                     ContentValues cv = new ContentValues();
