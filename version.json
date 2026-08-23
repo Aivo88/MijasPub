@@ -1,5 +1,5 @@
 {
-  "version": "1.12.02",
-  "cache": "mijaspub-v25",
-  "notes": "Uuteen asiakas -ikkunaan iso mikrofoninappi (Sanele) Peruuta-napin alle - kayttaa tabletin puheentunnistusta ja tayttaa nimen valitulla kielella. Vaatii uuden APK:n (Android-silta)."
+  "version": "1.12.03",
+  "cache": "mijaspub-v26",
+  "notes": "Korjaus: mikrofoni-emoji nakyi koodina (staattisessa HTML:ssa \\u-koodi ei muutu emojiksi) -> vaihdettu oikeaksi mikki-merkiksi ja isommaksi. Pelkka web-muutos."
 }
