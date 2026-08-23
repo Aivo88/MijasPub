@@ -1,5 +1,5 @@
 {
-  "version": "1.12.03",
-  "cache": "mijaspub-v26",
-  "notes": "Korjaus: mikrofoni-emoji nakyi koodina (staattisessa HTML:ssa \\u-koodi ei muutu emojiksi) -> vaihdettu oikeaksi mikki-merkiksi ja isommaksi. Pelkka web-muutos."
+  "version": "1.13.00",
+  "cache": "mijaspub-v27",
+  "notes": "Mikrofoninappi: mikki keskitetty ja isompi, teksti alla 'Paina mikrofonia ja sano nimesi' (kaikilla kielilla). Asetusten alalaitaan tekija-teksti: Tehnyt Kaariainen Antti + sahkoposti. Pelkat web-muutokset."
 }
