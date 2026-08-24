@@ -1,5 +1,5 @@
 {
-  "version": "1.13.00",
-  "cache": "mijaspub-v27",
-  "notes": "Mikrofoninappi: mikki keskitetty ja isompi, teksti alla 'Paina mikrofonia ja sano nimesi' (kaikilla kielilla). Asetusten alalaitaan tekija-teksti: Tehnyt Kaariainen Antti + sahkoposti. Pelkat web-muutokset."
+  "version": "1.14.00",
+  "cache": "mijaspub-v28",
+  "notes": "(3) Kirjanpitajan PDF: tapahtumien maara laskee vain rahatapahtumat, maksamattomat piikit eivat enaa nay. (1) Asiakaskohtainen paivaraportti: kassanhoitajan naytolla asiakasta napauttaessa PDF- ja Tulosta-napit (tallentuu SaunaMijas/Customers). (2) Tulosta-nappi suoraan tulostimelle tuoteraporttiin, kirjanpitajan vientiin ja asiakasraporttiin (vaatii uuden APK:n). Web-osat tulevat napista, tulostus vaatii uuden APK:n."
 }

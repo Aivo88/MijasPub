@@ -378,6 +378,8 @@ input:focus,select:focus{border-color:var(--gold);}
   </div>
   <div class="body-scroll" id="txday-body"></div>
   <div class="foot">
+    <button class="btn-full" style="background:var(--gbg);border-color:var(--green);color:var(--green);margin-bottom:0.5em;" onclick="outCustomerPdf(false)" data-t="generate_pdf">PDF</button>
+    <button class="btn-full" style="border-color:var(--gold);color:var(--gold2);margin-bottom:0.5em;" onclick="outCustomerPdf(true)" data-t="print_direct">Print</button>
     <button class="btn-full" style="background:var(--bg3);border-color:var(--gold);color:var(--gold2);" onclick="backToReports()" data-t="back">Back</button>
   </div>
 </div>
@@ -674,7 +676,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.13.00';
+var APP_VERSION = '1.14.00';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -704,6 +706,8 @@ var LANG={
   range_all:{en:'All time',fi:'Koko aika',es:'Todo',de:'Gesamt',sv:'Hela tiden'},
   daily_pick_hint:{en:'Tick the products you want to include in the printout.',fi:'Rastita ne tuotteet jotka haluat mukaan tulosteeseen.',es:'Marca los productos que quieres incluir en la impresi\u00F3n.',de:'W\u00E4hle die Produkte aus, die gedruckt werden sollen.',sv:'Kryssa i de produkter du vill ha med i utskriften.'},
   voice_dictate:{en:'Press the microphone and say your name',fi:'Paina mikrofonia ja sano nimesi',es:'Pulsa el micr\u00F3fono y di tu nombre',de:'Dr\u00FCcke das Mikrofon und sag deinen Namen',sv:'Tryck p\u00E5 mikrofonen och s\u00E4g ditt namn'},
+  print_direct:{en:'Print',fi:'Tulosta',es:'Imprimir',de:'Drucken',sv:'Skriv ut'},
+  print_unavailable:{en:'Printing needs the app (install the latest APK).',fi:'Tulostus vaatii appin (asenna uusin APK).',es:'La impresi\u00F3n requiere la app (instala el APK m\u00E1s reciente).',de:'Drucken erfordert die App (neueste APK installieren).',sv:'Utskrift kr\u00E4ver appen (installera senaste APK).'},
   voice_unavailable:{en:'Voice input not available', fi:'Puheentunnistus ei k\u00E4ytett\u00E4viss\u00E4', es:'Dictado no disponible', de:'Spracheingabe nicht verf\u00FCgbar', sv:'R\u00F6stinmatning ej tillg\u00E4nglig'},
   m_idle:{en:'Auto-return timer',fi:'Palautusajastin',es:'Temporizador de retorno',de:'R\u00FCckkehr-Timer',sv:'\u00C5tervändartimer'},
   m_uiscale:{en:'Font & button size',fi:'Fonttien ja nappien koko',es:'Tama\u00F1o de fuente y botones',de:'Schrift- und Buttongr\u00F6\u00DFe',sv:'Text- och knappstorlek'},
@@ -2940,7 +2944,7 @@ function renderExport(){
     '</div>';
   var langSel='<div class="card-box"><div class="label">'+t('report_language')+'</div>'+
     '<select id="exp-lang">'+LANGS.map(function(L){ return '<option value="'+L[0]+'"'+(expLang===L[0]?' selected':'')+'>'+L[1]+'</option>'; }).join('')+'</select></div>';
-  var btn='<button class="btn-full" style="background:var(--gbg);border-color:var(--green);color:var(--green);margin-bottom:0.8em;" onclick="generatePDF()">'+t('generate_pdf')+'</button>';
+  var btn='<button class="btn-full" style="background:var(--gbg);border-color:var(--green);color:var(--green);margin-bottom:0.6em;" onclick="generatePDF()">'+t('generate_pdf')+'</button>'+'<button class="btn-full" style="border-color:var(--gold);color:var(--gold2);margin-bottom:0.8em;" onclick="pdfWantPrint=true; generatePDF()">'+t('print_direct')+'</button>';
   document.getElementById('export-body').innerHTML=presets+range+preview+toggles+langSel+btn;
   var ls=document.getElementById('exp-lang'); if(ls) ls.onchange=function(){ expLang=this.value; };
 }
@@ -3155,7 +3159,7 @@ function generateOpenTabsPDF(){
   headerLogoForPDF(st,function(logo){
     if(logo){ logo.x=50; logo.y=40; }
     var blob=new Blob([pdfBytes(buildPDF(L,logo))],{type:'application/pdf'});
-    saveBlob(blob, name, 'SaunaMijas/Cashregister');
+    outputPdf(blob, name, 'SaunaMijas/Cashregister');
     toast(t('ts_pdf_created'),'ok');
   });
 }
@@ -3221,7 +3225,7 @@ function generatePDF(){
   row(pdfT('expenses',lang),money(sum.exp));
   row(pdfT('writeoffs',lang),money(sum.loss));
   row(pdfT('net',lang),money(sum.income-sum.exp),true);
-  row(pdfT('transactions',lang),String(txs.length));
+  row(pdfT('transactions',lang),String(txs.filter(function(x){ return x.type!=='debt'; }).length));
   y+=16;
 
   // ----- Income per day -----
@@ -3291,7 +3295,7 @@ function generatePDF(){
     if(logo){ logo.x=50; logo.y=40; }
     var pdf=buildPDF(L, logo);
     var blob=new Blob([pdfBytes(pdf)],{type:'application/pdf'});
-    saveBlob(blob, name, 'SaunaMijas/Cashregister');
+    outputPdf(blob, name, 'SaunaMijas/Cashregister');
     toast(t('ts_pdf_created'),'ok');
   });
 }
@@ -3426,6 +3430,7 @@ function renderProdDaily(){
         '<div class="row-sub" style="color:var(--gold2);">'+f(r.sum)+EUR+'</div></div></div>';
     }).join('');
     body+='<button class="btn-full" style="margin-top:1em;background:var(--gbg);border-color:var(--green);color:var(--green);" onclick="printDaily()">'+t('print')+' (PDF)</button>';
+    body+='<button class="btn-full" style="margin-top:0.5em;border-color:var(--gold);color:var(--gold2);" onclick="pdfWantPrint=true; printDaily()">'+t('print_direct')+'</button>';
   }
   document.getElementById('prod-report-body').innerHTML=body;
 }
@@ -3469,7 +3474,7 @@ function printDaily(){
   headerLogoForPDF(st,function(logo){
     if(logo){ logo.x=50; logo.y=40; }
     var blob=new Blob([pdfBytes(buildPDF(lines,logo))],{type:'application/pdf'});
-    saveBlob(blob, name, 'SaunaMijas/Products');
+    outputPdf(blob, name, 'SaunaMijas/Products');
     toast(t('ts_pdf_created'),'ok');
   });
 }
@@ -3914,6 +3919,52 @@ function txDaysHTML(txs){
       g.map(function(t){ return txHTML(t,false,true); }).join('');
   }).join('');
 }
+function customerDayData(){
+  var st=getState(), ctx=txdayCtx; if(!ctx) return null;
+  var pool;
+  if(ctx.scope==='month') pool=monthTxs(st);
+  else if(ctx.scope==='mday') pool=st.transactions.filter(function(t){ return txBarDate(t)===monthDayCtx; });
+  else if(ctx.scope==='cust') pool=st.transactions;
+  else pool=dayTxs(st);
+  var txs=pool.filter(function(t){ return (t.customerId||'?')===ctx.id; }).sort(function(a,b){ return a.ts-b.ts; });
+  var name=txs.length?(txs[0].customerName||'?'):'?';
+  var period = ctx.scope==='month' ? (monthName(repMonth.month)+' '+repMonth.year)
+             : ctx.scope==='mday' ? fmtDate(monthDayCtx)
+             : ctx.scope==='cust' ? t('all_history')
+             : fmtDate(todayBarDate());
+  return {st:st,txs:txs,name:name,period:period,id:ctx.id};
+}
+function outCustomerPdf(wantPrint){
+  var d=customerDayData(); if(!d || !d.txs.length){ toast(t('no_transactions2'),'err'); return; }
+  var st=d.st, lang=curLang(), cur=st.settings.currency||'\u20AC';
+  function money(n){ return n.toFixed(2)+' '+cur; }
+  var lines=[], y=60;
+  lines.push({text:reportTitle(st),x:50,y:y,size:18,bold:true}); y+=24;
+  lines.push({text:d.name+'  \u2014  '+d.period,x:50,y:y,size:12,bold:true}); y+=24;
+  lines.push({text:pdfT('date',lang),x:50,y:y,size:10,bold:true});
+  lines.push({text:pdfT('description',lang),x:130,y:y,size:10,bold:true});
+  lines.push({text:pdfT('amount',lang),x:470,y:y,size:10,bold:true}); y+=15;
+  d.txs.forEach(function(tx){
+    if(y>805) return;
+    var desc=(tx.type==='debt' && tx.items && tx.items.length) ? tx.items.map(function(i){ return itemName(i); }).join(', ') : txLabel(tx);
+    lines.push({text:pdfDate(txBarDate(tx),lang),x:50,y:y,size:9});
+    lines.push({text:(''+desc).slice(0,58),x:130,y:y,size:9});
+    lines.push({text:(tx.type==='debt'?'-':'+')+money(tx.amount),x:470,y:y,size:9});
+    y+=13;
+  });
+  y+=12;
+  var bal=balanceOf(st,d.id);
+  var _BAL={fi:'Saldo',en:'Balance',es:'Saldo',de:'Saldo',sv:'Saldo'};
+  lines.push({text:(_BAL[lang]||'Balance'),x:50,y:y,size:12,bold:true});
+  lines.push({text:money(bal),x:470,y:y,size:12,bold:true});
+  var name='Customer '+d.name+' '+dotDate(new Date())+'.pdf';
+  headerLogoForPDF(st,function(logo){
+    if(logo){ logo.x=50; logo.y=40; }
+    var blob=new Blob([pdfBytes(buildPDF(lines,logo))],{type:'application/pdf'});
+    if(wantPrint) printBlob(blob, name); else saveBlob(blob, name, 'SaunaMijas/Customers');
+    toast(t('ts_pdf_created'),'ok');
+  });
+}
 function openTxDay(scope,custId){
   var st=getState(), pool;
   if(scope==='month') pool=monthTxs(st);
@@ -4150,6 +4201,18 @@ function bumpCols(d){
   var st=getState();
   st.settings.cols=Math.min(6,Math.max(2,st.settings.cols+d));
   if(saveState(st)){ applyAppearance(); renderSetPage(); }
+}
+var pdfWantPrint=false;
+function printBlob(blob, name){
+  if(window.MijasBridge && MijasBridge.printPdf){
+    var reader=new FileReader();
+    reader.onloadend=function(){ var res=''+reader.result; var b64=res.indexOf(',')>=0?res.split(',')[1]:res; try{ MijasBridge.printPdf(b64, name); }catch(e){ toast(t('print_unavailable'),'err'); } };
+    reader.readAsDataURL(blob);
+  } else { toast(t('print_unavailable'),'err'); }
+}
+function outputPdf(blob, name, subdir){
+  if(pdfWantPrint){ pdfWantPrint=false; printBlob(blob, name); }
+  else { saveBlob(blob, name, subdir); }
 }
 // Appissa (MijasBridge) tallennetaan tiedosto suoraan laitteen kansioon;
 // selaimessa/PWA:ssa kaytetaan tavallista latausta.
