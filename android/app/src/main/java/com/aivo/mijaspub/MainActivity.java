@@ -10,6 +10,14 @@ import android.content.ContentValues;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.content.Context;
+import android.os.CancellationSignal;
+import android.os.ParcelFileDescriptor;
+import android.print.PageRange;
+import android.print.PrintAttributes;
+import android.print.PrintDocumentAdapter;
+import android.print.PrintDocumentInfo;
+import android.print.PrintManager;
 import android.speech.RecognizerIntent;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
@@ -199,6 +207,44 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception e) {
                 runOnUiThread(() -> android.widget.Toast.makeText(MainActivity.this, "Tallennus epaonnistui", android.widget.Toast.LENGTH_SHORT).show());
             }
+        }
+
+        @JavascriptInterface
+        public void printPdf(String b64, String name) {
+            runOnUiThread(() -> {
+                try {
+                    final byte[] data = Base64.decode(b64, Base64.DEFAULT);
+                    final String jobName = (name == null || name.isEmpty()) ? "Sauna Mijas" : name;
+                    PrintManager pm = (PrintManager) getSystemService(Context.PRINT_SERVICE);
+                    PrintDocumentAdapter adapter = new PrintDocumentAdapter() {
+                        @Override
+                        public void onLayout(PrintAttributes oldAttr, PrintAttributes newAttr,
+                                             CancellationSignal cancel, LayoutResultCallback cb, android.os.Bundle extras) {
+                            if (cancel.isCanceled()) { cb.onLayoutCancelled(); return; }
+                            PrintDocumentInfo info = new PrintDocumentInfo.Builder(jobName)
+                                    .setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT).build();
+                            cb.onLayoutFinished(info, true);
+                        }
+                        @Override
+                        public void onWrite(PageRange[] pages, ParcelFileDescriptor dest,
+                                            CancellationSignal cancel, WriteResultCallback cb) {
+                            try {
+                                java.io.InputStream in = new java.io.ByteArrayInputStream(data);
+                                java.io.OutputStream out = new java.io.FileOutputStream(dest.getFileDescriptor());
+                                byte[] buf = new byte[16384]; int r;
+                                while ((r = in.read(buf)) >= 0) { out.write(buf, 0, r); }
+                                in.close(); out.close();
+                                cb.onWriteFinished(new PageRange[]{ PageRange.ALL_PAGES });
+                            } catch (Exception ex) {
+                                cb.onWriteFailed(ex.getMessage());
+                            }
+                        }
+                    };
+                    pm.print(jobName, adapter, null);
+                } catch (Exception e) {
+                    android.widget.Toast.makeText(MainActivity.this, "Tulostus ei kaytettavissa", android.widget.Toast.LENGTH_SHORT).show();
+                }
+            });
         }
 
         @JavascriptInterface
