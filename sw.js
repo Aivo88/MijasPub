@@ -1,6 +1,6 @@
 // SE7EN V2 service worker
 // Bump CACHE on every release.
-const CACHE = 'mijaspub-v29';
+const CACHE = 'mijaspub-v30';
 const ASSETS = ['./', './index.html', './manifest.json', './header-default.png',
                 './icon-192.png', './icon-512.png', './bg.jpg'];
 

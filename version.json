@@ -1,5 +1,5 @@
 {
-  "version": "1.15.00",
-  "cache": "mijaspub-v29",
-  "notes": "Tuoteraportin valinta kategorioittain: rastita kategoria -> sen alle tulee kaikki kategorian tuotteet (myos myymattomat = 0 kpl) -> voit poistaa yksittaisia tuotteita raportista. Nollatuotteet saa halutessa mukaan. Pelkka web-muutos."
+  "version": "1.15.01",
+  "cache": "mijaspub-v30",
+  "notes": "(1) Idle-ajastin palauttaa kotinaytolle ja sulkee avoimen ikkunan (esim. PIN-koodin kirjoitus) myos silloin kun modaali on auki. (2) Vie kirjanpitajalle: paivamaaravalinta nyt paiva.kuukausi.vuosi -jarjestyksessa (esim. 24.08.2026) natiivin kk-ensin -kentan sijaan. Pelkat web-muutokset."
 }
