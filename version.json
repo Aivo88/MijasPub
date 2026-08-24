@@ -1,5 +1,5 @@
 {
-  "version": "1.14.00",
-  "cache": "mijaspub-v28",
-  "notes": "(3) Kirjanpitajan PDF: tapahtumien maara laskee vain rahatapahtumat, maksamattomat piikit eivat enaa nay. (1) Asiakaskohtainen paivaraportti: kassanhoitajan naytolla asiakasta napauttaessa PDF- ja Tulosta-napit (tallentuu SaunaMijas/Customers). (2) Tulosta-nappi suoraan tulostimelle tuoteraporttiin, kirjanpitajan vientiin ja asiakasraporttiin (vaatii uuden APK:n). Web-osat tulevat napista, tulostus vaatii uuden APK:n."
+  "version": "1.15.00",
+  "cache": "mijaspub-v29",
+  "notes": "Tuoteraportin valinta kategorioittain: rastita kategoria -> sen alle tulee kaikki kategorian tuotteet (myos myymattomat = 0 kpl) -> voit poistaa yksittaisia tuotteita raportista. Nollatuotteet saa halutessa mukaan. Pelkka web-muutos."
 }

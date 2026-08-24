@@ -676,7 +676,7 @@ input:focus,select:focus{border-color:var(--gold);}
 
 <script>
 "use strict";
-var APP_VERSION = '1.14.00';
+var APP_VERSION = '1.15.00';
 var KEY = 'mijaspub';
 var CASH_ID = '__cash__', CARD_ID = '__card__';
 var UNCAT = 'Uncategorized';
@@ -704,7 +704,7 @@ var LANG={
   range_day:{en:'Day',fi:'P\u00E4iv\u00E4',es:'D\u00EDa',de:'Tag',sv:'Dag'},
   range_month:{en:'Month',fi:'Kuukausi',es:'Mes',de:'Monat',sv:'M\u00E5nad'},
   range_all:{en:'All time',fi:'Koko aika',es:'Todo',de:'Gesamt',sv:'Hela tiden'},
-  daily_pick_hint:{en:'Tick the products you want to include in the printout.',fi:'Rastita ne tuotteet jotka haluat mukaan tulosteeseen.',es:'Marca los productos que quieres incluir en la impresi\u00F3n.',de:'W\u00E4hle die Produkte aus, die gedruckt werden sollen.',sv:'Kryssa i de produkter du vill ha med i utskriften.'},
+  daily_pick_hint:{en:'Tick a category to include its products, then untick any you don\u2019t want.',fi:'Rastita kategoria jonka tuotteet haluat mukaan, ja poista sitten haluamasi tuotteet.',es:'Marca una categor\u00EDa para incluir sus productos y desmarca los que no quieras.',de:'W\u00E4hle eine Kategorie, um ihre Produkte einzuschlie\u00DFen, und entferne einzelne bei Bedarf.',sv:'Kryssa i en kategori f\u00F6r att ta med dess produkter, avmarkera dem du inte vill ha.'},
   voice_dictate:{en:'Press the microphone and say your name',fi:'Paina mikrofonia ja sano nimesi',es:'Pulsa el micr\u00F3fono y di tu nombre',de:'Dr\u00FCcke das Mikrofon und sag deinen Namen',sv:'Tryck p\u00E5 mikrofonen och s\u00E4g ditt namn'},
   print_direct:{en:'Print',fi:'Tulosta',es:'Imprimir',de:'Drucken',sv:'Skriv ut'},
   print_unavailable:{en:'Printing needs the app (install the latest APK).',fi:'Tulostus vaatii appin (asenna uusin APK).',es:'La impresi\u00F3n requiere la app (instala el APK m\u00E1s reciente).',de:'Drucken erfordert die App (neueste APK installieren).',sv:'Utskrift kr\u00E4ver appen (installera senaste APK).'},
@@ -3377,7 +3377,7 @@ function renderTopSellers(){
   }
   document.getElementById('prod-report-body').innerHTML=body;
 }
-var dailyExcluded={}, dailyRows=[], dailyDate=null, dailyLang=null, dailyMode='day', dailyMonth=null, dailyYear=null, dailyIncludeOpen=false;
+var dailyExcluded={}, dailyRows=[], dailyDate=null, dailyLang=null, dailyMode='day', dailyMonth=null, dailyYear=null, dailyIncludeOpen=false, dailyCatChecked={}, dailyProdExcluded={};
 function dailyFilteredTxs(st){
   if(dailyMode==='all') return st.transactions.slice();
   if(dailyMode==='month'){
@@ -3418,16 +3418,30 @@ function renderProdDaily(){
     '<select id="daily-lang" onchange="dailyLang=this.value" style="background:var(--bg3);color:var(--gold2);border:1px solid var(--gold);border-radius:8px;padding:8px;">'+
     LANGS.map(function(L){ return '<option value="'+L[0]+'"'+(dailyLang===L[0]?' selected':'')+'>'+L[1]+'</option>'; }).join('')+'</select></div>';
   var openBtn='<button class="btn-full" style="margin-bottom:0.7em;'+(dailyIncludeOpen?'border-color:var(--gold);color:var(--gold2);':'')+'" onclick="toggleDailyOpen()">'+(dailyIncludeOpen?'\u2713 ':'')+t('include_open_tabs')+'</button>';
+  var totals={};
+  dailyRows.forEach(function(r){ if(r.id) totals[r.id]={qty:r.qty,sum:r.sum}; });
+  var cats={};
+  st.products.forEach(function(p){ var c=p.cat||'__none__'; (cats[c]=cats[c]||[]).push(p); });
+  var catKeys=Object.keys(cats).sort(function(a,b){ return catLabel(a).localeCompare(catLabel(b)); });
   var body=modeBar+picker+langSel+openBtn;
-  if(!dailyRows.length){ body+='<div class="empty-hint">'+t('no_sales_today')+'</div>'; }
+  body+='<div class="hint" style="margin-bottom:0.6em;">'+t('daily_pick_hint')+'</div>';
+  if(!st.products.length){ body+='<div class="empty-hint">'+t('no_products')+'</div>'; }
   else{
-    body+='<div class="hint" style="margin-bottom:0.6em;">'+t('daily_pick_hint')+'</div>';
-    body+=dailyRows.map(function(r,i){
-      var on=!dailyExcluded[r.name];
-      return '<div class="row"><button class="row-main" style="background:none;border:none;text-align:left;cursor:pointer;color:inherit;" onclick="toggleDaily('+i+')">'+
-        '<div style="font-weight:600;">'+(on?'\u2611':'\u2610')+' '+esc(r.name)+'</div></button>'+
-        '<div style="text-align:right;"><div style="font-weight:700;">'+r.qty+' '+t('pcs')+'</div>'+
-        '<div class="row-sub" style="color:var(--gold2);">'+f(r.sum)+EUR+'</div></div></div>';
+    body+=catKeys.map(function(ck){
+      var checked=!!dailyCatChecked[ck];
+      var head='<div class="row"><button class="row-main" style="background:none;border:none;text-align:left;cursor:pointer;color:inherit;" onclick="toggleDailyCat(\''+encodeURIComponent(ck)+'\')">'+
+        '<div style="font-weight:700;font-size:1.05em;">'+(checked?'\u2611':'\u2610')+' '+esc(catLabel(ck))+'</div></button></div>';
+      if(!checked) return head;
+      var prods=cats[ck].slice().sort(function(a,b){ return pName(a).localeCompare(pName(b)); });
+      var list=prods.map(function(p){
+        var on=!dailyProdExcluded[p.id];
+        var tt=totals[p.id]||{qty:0,sum:0};
+        return '<div class="row" style="padding-left:1.2em;"><button class="row-main" style="background:none;border:none;text-align:left;cursor:pointer;color:inherit;" onclick="toggleDailyProd(\''+p.id+'\')">'+
+          '<div>'+(on?'\u2611':'\u2610')+' '+esc(pName(p))+'</div></button>'+
+          '<div style="text-align:right;"><div style="font-weight:600;">'+tt.qty+' '+t('pcs')+'</div>'+
+          '<div class="row-sub" style="color:var(--gold2);">'+f(tt.sum)+EUR+'</div></div></div>';
+      }).join('');
+      return head+list;
     }).join('');
     body+='<button class="btn-full" style="margin-top:1em;background:var(--gbg);border-color:var(--green);color:var(--green);" onclick="printDaily()">'+t('print')+' (PDF)</button>';
     body+='<button class="btn-full" style="margin-top:0.5em;border-color:var(--gold);color:var(--gold2);" onclick="pdfWantPrint=true; printDaily()">'+t('print_direct')+'</button>';
@@ -3436,13 +3450,24 @@ function renderProdDaily(){
 }
 function setDailyMode(m){ dailyMode=m; renderProdDaily(); }
 function toggleDailyOpen(){ dailyIncludeOpen=!dailyIncludeOpen; renderProdDaily(); }
+function toggleDailyCat(c){ c=decodeURIComponent(c); dailyCatChecked[c]=!dailyCatChecked[c]; renderProdDaily(); }
+function toggleDailyProd(id){ if(dailyProdExcluded[id]) delete dailyProdExcluded[id]; else dailyProdExcluded[id]=true; renderProdDaily(); }
 function pickDailyMonth(){ var m=document.getElementById('daily-month'), y=document.getElementById('daily-year'); if(m) dailyMonth=parseInt(m.value,10); if(y) dailyYear=parseInt(y.value,10); renderProdDaily(); }
 function stepDaily(dir){ var st=getState(); var base=new Date(dailyDate); base.setDate(base.getDate()+dir); base.setHours(12,0,0,0); var nd=computeBarDate(base.getTime(), st.settings.dayEnd); if(nd>todayBarDate()) return; dailyDate=nd; renderProdDaily(); }
 function pickDailyDate(val){ if(!val) return; var st=getState(); var d=new Date(val+'T12:00:00'); dailyDate=computeBarDate(d.getTime(), st.settings.dayEnd); if(dailyDate>todayBarDate()) dailyDate=todayBarDate(); renderProdDaily(); }
 function toggleDaily(i){ var r=dailyRows[i]; if(!r) return; if(dailyExcluded[r.name]) delete dailyExcluded[r.name]; else dailyExcluded[r.name]=true; renderProdDaily(); }
 function printDaily(){
   var st=getState(), lang=dailyLang||curLang();
-  var rows=dailyRows.filter(function(r){ return !dailyExcluded[r.name]; });
+  var _tot={};
+  dailyRows.forEach(function(r){ if(r.id) _tot[r.id]={qty:r.qty,sum:r.sum}; });
+  var rows=[];
+  st.products.slice().sort(function(a,b){ var c=catLabel(a.cat||'').localeCompare(catLabel(b.cat||'')); return c||pName(a).localeCompare(pName(b)); }).forEach(function(p){
+    if(dailyCatChecked[p.cat||'__none__'] && !dailyProdExcluded[p.id]){
+      var tt=_tot[p.id]||{qty:0,sum:0};
+      rows.push({id:p.id, name:pName(p), qty:tt.qty, sum:tt.sum});
+    }
+  });
+  if(!rows.length){ toast(t('daily_pick_hint'),'err'); return; }
   var _rst=getState();
   function _pById(id){ for(var k=0;k<_rst.products.length;k++){ if(_rst.products[k].id===id) return _rst.products[k]; } return null; }
   function _nameL(r){ if(r.id){ var p=_pById(r.id); if(p){ var nm=p.names||{}; return nm[lang]||nm.fi||r.name; } } return r.name; }
